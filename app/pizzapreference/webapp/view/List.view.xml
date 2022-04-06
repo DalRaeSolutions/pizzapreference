@@ -1,0 +1,55 @@
+<mvc:View
+    controllerName="com.dalraesolutions.pizzapreference.pizzapreference.controller.List"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+	<Shell id="shell">
+		<App id="app">
+			<pages>
+				<Page id="apppage" title="{i18n>listTitle}">
+					<content>
+
+                        <Panel id="idEmployeePizzaRequestPanel">
+                            <content>
+
+                                <VBox class="sapUiSmallMargin">
+
+                                    <Button text="Add Pizza Preference" press="onCreateonEmployeePizzaRequest" visible="true" />
+
+                                    <List id="idEmployeePizzaRequestList" 
+                                        items="{ path: '/EmployeePizza', parameters: {'expand': 'pizza'}, sorter: { path: 'createdAt', descending: true } }" 
+                                        mode="None" 
+                                        noDataText="No records found" 
+                                        growing="true" 
+                                        growingScrollToLoad="true">
+
+                                        <CustomListItem>
+                                            <HBox>
+                                                <core:Icon size="2rem" src="sap-icon://meal" class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom" width="10%"/>
+                                                <VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom" width="20%">
+                                                    <Label text="{ path: 'createdAt', formatter: '.formatter.date' }"/>
+                                                    
+                                                </VBox>
+                                                <VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom" width="50%">
+                                                    <Label text="Pizza: {pizza/name}"/>
+                                                    <Label text="Description: {pizza/description}"/>
+                                                </VBox>
+                                            </HBox>
+                                        </CustomListItem>
+                                    </List>
+
+                                </VBox>
+                            </content>
+                        </Panel>
+
+
+                    </content>
+				</Page>
+			</pages>
+		</App>
+	</Shell>
+</mvc:View>

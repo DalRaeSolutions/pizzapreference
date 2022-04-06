@@ -1,0 +1,155 @@
+_schema-version: "3.1"
+ID: pizzapreference
+description: A simple CAP project.
+version: 1.0.0
+modules:
+
+- name: pizzapreference-srv
+  type: nodejs
+  path: gen/srv
+  properties:
+    EXIT: 1
+  requires:
+  - name: pizzapreference-xsuaa-service
+  - name: pizzapreference-db
+  provides:
+  - name: srv-api
+    public: true
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+
+
+- name: pizzapreference-db-deployer
+  type: hdb
+  path: gen/db
+  requires:
+  - name: pizzapreference-xsuaa-service
+  - name: pizzapreference-db
+  parameters:
+    buildpack: nodejs_buildpack
+
+
+- name: pizzapreference-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: pizzapreference-destination-service
+    parameters:
+      content-target: true
+  - name: pizzapreference-html-repo-host
+    parameters:
+      service-key:
+        name: pizzapreference-html-repo-host-key
+  - name: pizzapreference-xsuaa-service
+    parameters:
+      service-key:
+        name: pizzapreference-xsuaa-service-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: pizzapreference-html-repo-host
+          ServiceInstanceName: pizzapreference-html5-app-host-service
+          ServiceKeyName: pizzapreference-html-repo-host-key
+          sap.cloud.service: pizzapreference
+        - Authentication: OAuth2UserTokenExchange
+          Name: pizzapreference-uaa-pizzapreference
+          ServiceInstanceName: pizzapreference-xsuaa-service
+          ServiceKeyName: pizzapreference-xsuaa-service-key
+          sap.cloud.service: pizzapreference
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+
+
+- name: pizzapreference-ui-deployer
+  type: com.sap.application.content
+  path: app
+  requires:
+  - name: pizzapreference-html-repo-host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - pizzapreference-content.zip
+      name: pizzapreference
+      target-path: resources/
+
+
+- name: pizzapreference
+  type: html5
+  path: app/pizzapreference
+  build-parameters:
+    builder: custom
+    commands:
+    - npm run build
+    supported-platforms: []
+
+
+resources:
+- name: pizzapreference-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
+        instance:
+          destinations:
+          - Authentication: NoAuthentication
+            HTML5.ForwardAuthToken: true
+            Name: pizzapreference-api
+            ProxyType: Internet
+            Type: HTTP
+            URL: ~{srv-api/srv-url}
+          existing_destinations_policy: ignore
+      version: 1.0.0
+    service: destination
+    service-name: pizzapreference-destination-service
+    service-plan: lite
+  requires:
+  - name: srv-api
+
+
+- name: pizzapreference-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    config:
+      schema: pizzapreference
+    service: hana
+    service-plan: hdi-shared
+  properties:
+    HDI_DEPLOY_OPTIONS:
+      auto_undeploy: true
+    hdi-service-name: ${service-name}
+
+
+- name: pizzapreference-xsuaa-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      tenant-mode: dedicated
+      xsappname: pizzapreference
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+
+
+- name: pizzapreference-html-repo-host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: pizzapreference-html5-app-host-service
+    service-plan: app-host
+
+
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install --production
+    - npx -p @sap/cds-dk cds build --production

@@ -1,0 +1,50 @@
+{
+    "welcomeFile": "/index.html",
+    "authenticationMethod": "route",
+    "routes": [
+      {
+        "source": "^/resources/(.*)$",
+        "target": "/resources/$1",
+        "authenticationType": "none",
+        "destination": "ui5"
+      },
+      {
+        "source": "^/test-resources/(.*)$",
+        "target": "/test-resources/$1",
+        "authenticationType": "none",
+        "destination": "ui5"
+      },
+      {
+        "source": "^/v2/(.*)$",
+        "authenticationType": "xsuaa",
+        "destination": "pizzapreference-api",
+        "csrfProtection": false,
+        "target": "/v2/$1"
+    },
+    {
+        "source": "^/rest/(.*)$",
+        "authenticationType": "xsuaa",
+        "destination": "pizzapreference-api",
+        "csrfProtection": false,
+        "target": "/rest/$1"
+    },
+    {
+        "source": "^/srv-api/(.*)$",
+        "authenticationType": "xsuaa",
+        "destination": "pizzapreference-api",
+        "csrfProtection": false,
+        "target": "$1"
+    },
+    {
+        "source": "^(.*)$",
+        "target": "$1",
+        "service": "html5-apps-repo-rt",
+        "authenticationType": "xsuaa"
+      }
+
+    ],
+    "logout": {
+        "logoutEndpoint": "/logout",
+        "logoutPage": "/pizzapreference/webapp/logout.html"
+  }
+}

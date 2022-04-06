@@ -1,0 +1,76 @@
+<mvc:View
+    controllerName="com.dalraesolutions.pizzapreference.pizzapreference.controller.Create"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+>
+	<Shell id="shell">
+		<App id="app">
+			<pages>
+				<Page id="apppage" title="{i18n>createTitle}">
+
+					<content>
+
+                        <Panel id="idCreateEquipmentRequestPanel">
+                            <content>
+                                <VBox class="sapUiSmallMargin">
+                                    <f:SimpleForm id="idCreateEquipmentRequestForm"
+                                        editable="true"
+                                        layout="ResponsiveGridLayout"
+                                        labelSpanXL="4"
+                                        labelSpanL="3"
+                                        labelSpanM="4"
+                                        labelSpanS="12"
+                                        adjustLabelSpan="false"
+                                        emptySpanXL="0"
+                                        emptySpanL="4"
+                                        emptySpanM="0"
+                                        emptySpanS="0"
+                                        columnsXL="2"
+                                        columnsL="1"
+                                        columnsM="1"
+                                        singleContainerFullSize="false">
+                                        <f:content>
+
+                                            <Label text="Email" />
+                                            <Input value="{employeePizzaRecord>/employeeId}" editable="false" />
+
+                                            <Label text="Pizza" />
+                                            <Select enabled="true"
+                                                    editable="true"
+                                                    forceSelection="false"
+                                                    selectedKey="{employeePizzaRecord>/pizza_ID}"
+                                                    change="onPizzaChange"
+                                                    items="{
+                                                        path: 'pizzaModel>/results'
+                                                    }">
+                                                <core:Item key="{pizzaModel>ID}" text="{pizzaModel>name}" />
+                                            </Select>
+
+                                            <Label text="Notes" />
+                                            <Input value="{employeePizzaRecord>/notes}" editable="true" />
+
+                                        </f:content>
+                                    </f:SimpleForm>
+
+                                </VBox>
+                            </content>
+                        </Panel>
+
+
+                    </content>
+                    <footer>
+                        <OverflowToolbar>
+                            <ToolbarSpacer/>
+                            <Button text="Cancel" press="onCancel" visible="true" type="Reject" />
+                            <Button text="Create" press="onCreateEmployeePizzaRequest" visible="true" type="Accept"/>
+                        </OverflowToolbar>
+                    </footer>
+				</Page>
+			</pages>
+		</App>
+	</Shell>
+</mvc:View>
