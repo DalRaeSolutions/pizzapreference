@@ -21,9 +21,10 @@ sap.ui.define([
 
             onRoutePatternMatched: function(oEvent) {
 
-                this._employee_ID = oEvent.getParameter("arguments").id || "info@dalraesolutions.com.au";
-
                 const self = this;
+
+                this._employee_ID = self.getUserEmail() || "info@dalraesolutions.com.au";
+
                 self.scrollToTop();
                 self.onLoadList();
 

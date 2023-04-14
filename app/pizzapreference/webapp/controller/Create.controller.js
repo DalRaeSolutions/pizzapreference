@@ -23,7 +23,7 @@ sap.ui.define([
 
                 self.scrollToTop();
 
-                this._employee_ID = oEvent.getParameter("arguments").id || "info@dalraesolutions.com.au";
+                this._employee_ID = self.getUserEmail() || "info@dalraesolutions.com.au";
 
                 this.onLoadPizzaModel();
 

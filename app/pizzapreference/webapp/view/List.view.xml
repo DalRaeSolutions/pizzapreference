@@ -37,6 +37,7 @@
                                                 <VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom" width="50%">
                                                     <Label text="Pizza: {pizza/name}"/>
                                                     <Label text="Description: {pizza/description}"/>
+                                                    <Label text="Notes: {/notes}"/>
                                                 </VBox>
                                             </HBox>
                                         </CustomListItem>
