@@ -6,6 +6,7 @@
     xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
+    xmlns:data="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
 >
 	<Shell id="shell">
 		<App id="app">
@@ -18,10 +19,10 @@
 
                                 <VBox class="sapUiSmallMargin">
 
-                                    <Button text="Add Pizza Preference" press="onCreateonEmployeePizzaRequest" visible="true" />
+                                    <Button text="Add Pizza Preference" press="onCreateonEmployeePizzaRequest" visible="{= ${listModel>/count} === 0}" />
 
                                     <List id="idEmployeePizzaRequestList" 
-                                        items="{ path: '/EmployeePizza', parameters: {'expand': 'pizza'}, sorter: { path: 'createdAt', descending: true } }" 
+                                        items="{ path: '/EmployeePizza', parameters: {'expand': 'pizza', $count : true}, sorter: { path: 'createdAt', descending: true } }" 
                                         mode="None" 
                                         noDataText="No records found" 
                                         growing="true" 
@@ -37,7 +38,10 @@
                                                 <VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom" width="50%">
                                                     <Label text="Pizza: {pizza/name}"/>
                                                     <Label text="Description: {pizza/description}"/>
-                                                    <Label text="Notes: {/notes}"/>
+                                                    <Label text="Notes: {notes}"/>
+                                                </VBox>
+                                                <VBox width="125px">
+                                                    <Button text="Delete" width="100px" type="Reject" data:id="{ID}" press="onDeleteEmployeePizza" icon="sap-icon://delete" />
                                                 </VBox>
                                             </HBox>
                                         </CustomListItem>

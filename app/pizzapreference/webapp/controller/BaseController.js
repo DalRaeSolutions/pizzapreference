@@ -82,6 +82,52 @@ sap.ui.define([
                 });
             },
 
+            getOdataUpdatePromise: function(model, path, payload)
+            {
+                return new Promise((resolve,reject) => {
+                    if(model)
+                    {
+                        model.update(path,
+                            payload, 
+                            {
+                                success: function(data){ 
+                                    resolve(data); 
+                                },
+                                error: function(error){ 
+                                    reject(error); 
+                                },
+                            });
+                    }
+                    else
+                    {
+                        reject("Model not found");
+                    }
+                });
+            },
+
+            getOdataDeletePromise: function(model, path)
+            {
+                return new Promise((resolve,reject) => {
+                    if(model)
+                    {
+                        model.remove(path,
+                            {
+                                success: function(data){ 
+                                    resolve(data); 
+                                },
+                                error: function(error){ 
+                                    reject(error); 
+                                },
+                            });
+                    }
+                    else
+                    {
+                        reject("Model not found");
+                    }
+                });
+            },
+
+
             grep: function(items, callback) {
                 var filtered = [],
                     len = items ? items.length : 0,
