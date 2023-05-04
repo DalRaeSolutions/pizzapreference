@@ -77,11 +77,25 @@ modules:
       - pizzapreference-content.zip
       name: pizzapreference
       target-path: resources/
+    - artifacts:
+      - pizzapreferencetile-content.zip
+      name: pizzapreferencetile
+      target-path: resources/
 
 
 - name: pizzapreference
   type: html5
   path: app/pizzapreference
+  build-parameters:
+    builder: custom
+    commands:
+    - npm run build
+    supported-platforms: []
+
+
+- name: pizzapreferencetile
+  type: html5
+  path: app/pizzapreferencetile
   build-parameters:
     builder: custom
     commands:
