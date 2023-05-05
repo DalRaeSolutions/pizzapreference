@@ -100,6 +100,11 @@ sap.ui.define([
 
             onPress: function (oEvent) {
                 
+                if(oEvent.stop)
+                {
+                    return;
+                }
+                
                 var sTargetUrl = this._oProperties.targetURL;
         
                 if (sTargetUrl) {
@@ -115,12 +120,13 @@ sap.ui.define([
 
                 oEvent.preventDefault();
                 oEvent.cancelBubble();
+                oEvent.stop = true;
 
                 const oModel = this.getView().getModel();
                 const oModelData = oModel.getData();
                 window.open(oModelData.link, "_blank");
 
-                return false;
+                return oEvent;
 
             },
 
