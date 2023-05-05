@@ -11,12 +11,8 @@
 >
     <GenericTile
         header="{/title}"
-        sizeBehavior="Responsive"
-        wrappingType="Hyphenated"
+        sizeBehavior="Small"
         subheader="{/subTitle}"
-        frameType="OneByOne"
-        tileIcon="sap-icon://meal"
-        mode="ContentMode"
         press="onPress">
         <TileContent>
             <VBox>
@@ -29,21 +25,6 @@
                     target="_blank"
                     />
 
-            
-                <!--
-                <HBox>
-                
-                    <microchart:RadialMicroChart size="S" percentage="45" />
-                    <microchart:ComparisonMicroChart size="S" press="press">
-                        <microchart:data>
-                            <microchart:ComparisonMicroChartData title="These" value="10" color="Good" />
-                            <microchart:ComparisonMicroChartData title="Are" value="50" color="Critical" />
-                            <microchart:ComparisonMicroChartData title="Samples" value="20" color="Error" />
-                        </microchart:data>
-                    </microchart:ComparisonMicroChart>
-
-                </HBox>
-                                    -->
             </VBox>
         </TileContent>
     </GenericTile>

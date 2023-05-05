@@ -21,16 +21,15 @@ sap.ui.define([
                 this._oProperties = (oComponentData && oComponentData.properties) ? oComponentData.properties : {};
 
                 var oTileModel = new JSONModel({
-                    title: this._oProperties.title || "Notifications",
-                    subTitle: this._oProperties.subtitle || "custom tile",
-                    busyChart: false,
+                    title: this._oProperties.title || "",
+                    subTitle: this._oProperties.subtitle || "",
+                    busy: false,
                     errors: 0,
                     notifications: 0,
                     pizzaType: "",
                     link: ""
                 });
 
-                //this.setModelData(oTileModel, "tileModel");
                 this.getView().setModel(oTileModel);
                 this.fetchTileData(oTileModel);
 			},
@@ -39,7 +38,7 @@ sap.ui.define([
 
                 const self = this;
 
-                oViewModel.setProperty("/busyChart", true);
+                oViewModel.setProperty("/busy", true);
 
                 
                 this.getTileDataPromise().then(data => {
@@ -61,12 +60,12 @@ sap.ui.define([
                         var link = `https://www.google.com/search?q=${pizzaName}`;
                         oViewModel.setProperty('/link', link);  
 
-                        oViewModel.setProperty("/busyChart", false);
+                        oViewModel.setProperty("/busy", false);
 
                     }
 
                 }).catch(oError => {
-                    oViewModel.setProperty("/busyChart", false);
+                    oViewModel.setProperty("/busy", false);
                     console.error(oError);
                 });
             },
@@ -99,7 +98,8 @@ sap.ui.define([
                 });
             },
 
-            onPress: function () {
+            onPress: function (oEvent) {
+                
                 var sTargetUrl = this._oProperties.targetURL;
         
                 if (sTargetUrl) {
@@ -113,11 +113,14 @@ sap.ui.define([
 
             handleLinkPress: function(oEvent) {
 
-                //oEvent.preventDefault();
+                oEvent.preventDefault();
+                oEvent.cancelBubble();
 
                 const oModel = this.getView().getModel();
                 const oModelData = oModel.getData();
                 window.open(oModelData.link, "_blank");
+
+                return false;
 
             },
 
