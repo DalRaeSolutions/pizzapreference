@@ -102,7 +102,8 @@ sap.ui.define([
                 
                 if(oEvent.stop)
                 {
-                    return;
+                    oEvent.stop = false;
+                    return oEvent;
                 }
                 
                 var sTargetUrl = this._oProperties.targetURL;
