@@ -186,7 +186,11 @@ sap.ui.define([
             },
 
             onLogout: function(){
-                window.location.assign("/api/logout");
+                // /logout matches the approuter's built-in logout endpoint declared in
+                // xs-app.json (logoutEndpoint). In dev the backend handles it (clears the
+                // appAuth cookie + redirects to /api/login). In prod the approuter intercepts
+                // it before the request reaches the backend and runs the xsuaa logout flow.
+                window.location.assign("/logout");
             }
 
         });

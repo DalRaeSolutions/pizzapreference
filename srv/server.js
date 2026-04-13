@@ -4,17 +4,20 @@ const express = require("express");
 
 log.setLoggingLevel("debug");
 
-// Cookie-based login for dev. We do NOT use browser native Basic auth at all because
-// browsers cache it aggressively and there's no API to clear the cache from JS or to
-// reliably force a re-prompt. Instead:
-//
+// ---------------------------------------------------------------------------------------
+// Dev-only cookie login
+// ---------------------------------------------------------------------------------------
+// When CAP is using mocked auth (i.e. local dev), browsers cache Basic credentials too
+// aggressively to support a working "switch user" flow. We bypass browser native Basic auth
+// entirely:
 //   - The user signs in via a real HTML form at /api/login.
 //   - We base64(username:password) and stash it in an httponly cookie.
-//   - A pre-CAP middleware reads the cookie on every request and sets the Authorization
-//     header so CAP's existing mocked auth keeps working unchanged.
-//   - Logout = delete the cookie + redirect to the login form.
+//   - A pre-CAP middleware reads the cookie on every request and rewrites the Authorization
+//     header so CAP's mocked auth keeps working unchanged.
+//   - /logout clears the cookie and bounces back to the login form.
 //
-// Switching users at demo time is now a single click.
+// In production the CAP auth profile flips to xsuaa, the approuter handles login and
+// logout, and none of this code runs — the early `return` below skips registration.
 
 const COOKIE_NAME = "appAuth";
 
@@ -73,11 +76,17 @@ cds.on("bootstrap", (app) => {
     app.use(express.json());
     app.use(express.urlencoded({ extended: false }));
 
-    // Bridge: the cookie is the single source of truth. If it's set, it OVERRIDES any
-    // Basic auth header the browser may have sent from its native credential cache (which
-    // is what kept silently logging the user back in as the wrong account). If there's no
-    // cookie, strip any browser-supplied Basic auth so CAP returns 401 and the client
-    // bounces to /api/login instead of silently re-using cached creds.
+    // Skip the entire dev-login subsystem unless CAP is using mocked auth.
+    // In production the [production] profile flips this to xsuaa and the approuter takes over.
+    const authCfg = cds.env.requires && cds.env.requires.auth;
+    const isMocked = !!(authCfg && authCfg.kind === "mocked");
+    if (!isMocked) {
+        return;
+    }
+
+    // Bridge: cookie is the source of truth. Cached browser Basic creds are stripped if
+    // there's no cookie so the client falls through to the login form instead of silently
+    // re-authing as a stale user.
     app.use((req, _res, next) => {
         const cookies = parseCookies(req.headers.cookie);
         if (cookies[COOKIE_NAME]) {
@@ -96,9 +105,8 @@ cds.on("bootstrap", (app) => {
         res.send(loginForm(req.query.error));
     });
 
-    // Login submit (POST). We don't pre-validate against the user list — CAP's auth will
-    // reject bad credentials on the next /odata call, and the v4 fetch helpers redirect
-    // back to /api/login on 401.
+    // Login submit (POST). We don't pre-validate against the user list — CAP will reject
+    // bad credentials on the next /odata call and the v4 fetch helper bounces here on 401.
     app.post("/api/login", (req, res) => {
         const username = (req.body && req.body.username) || "";
         const password = (req.body && req.body.password) || "";
@@ -110,8 +118,11 @@ cds.on("bootstrap", (app) => {
         res.redirect("/pizzapreference/webapp/index.html");
     });
 
-    // Logout: clear the cookie and send the user back to the login form.
-    app.get("/api/logout", (_req, res) => {
+    // /logout matches the approuter's built-in logout endpoint (declared in xs-app.json).
+    // In dev we handle it ourselves: clear the cookie and send the user back to the login form.
+    // In prod the approuter intercepts /logout before it ever reaches the backend, terminates
+    // the xsuaa session, and redirects to xs-app.json's logoutPage.
+    app.get("/logout", (_req, res) => {
         console.log("[logout] clearing auth cookie");
         res.setHeader("Set-Cookie", COOKIE_NAME + "=; Path=/; Max-Age=0; SameSite=Lax");
         res.redirect("/api/login");

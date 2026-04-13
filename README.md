@@ -58,7 +58,7 @@ Standing preferences are pre-seeded from [db/data/dalrae.pizzapreference-Employe
 Paste this into the **Attendees** textarea:
 
 ```
-To: Alice Anderson <alice@acme.test>; Bob Barnes <bob@acme.test>; Demo Eater <eater@acme.test>; Brad Smith <both@acme.test>; Frank Foster <frank@acme.test>; Gina Green <gina@acme.test>; Henry Hall <henry@acme.test>
+To: Alice Anderson <alice@acme.test>; Bob Barnes <bob@acme.test>; Demo Eater <eater@acme.test>; Demo Both <both@acme.test>; Frank Foster <frank@acme.test>; Gina Green <gina@acme.test>; Henry Hall <henry@acme.test>
 ```
 
 At the default `slicesPerPerson = 3` and 8 slices per pizza, the Summary tab should show:
