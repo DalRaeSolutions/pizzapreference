@@ -15,6 +15,9 @@ sap.ui.define([
             this.getView().setModel(new JSONModel({
                 preference: null,
                 orders: [],
+                currentUserId: null,
+                currentUserDisplayName: "",
+                showUserHeader: !sap.ushell,
                 isEater: false,
                 isOrderer: false
             }), "viewModel");
@@ -58,10 +61,13 @@ sap.ui.define([
                         const result = (oData && oData.currentUser) ? oData.currentUser : oData;
                         const info = {
                             id: result ? result.id : null,
+                            displayName: result && result.displayName ? result.displayName : (result && result.id) || "",
                             isEater: !!(result && result.isEater),
                             isOrderer: !!(result && result.isOrderer)
                         };
                         const vm = self.getView().getModel("viewModel");
+                        vm.setProperty("/currentUserId", info.id);
+                        vm.setProperty("/currentUserDisplayName", info.displayName);
                         vm.setProperty("/isEater", info.isEater);
                         vm.setProperty("/isOrderer", info.isOrderer);
                         resolve(info);
@@ -102,12 +108,19 @@ sap.ui.define([
                 return;
             }
 
+            const currentUserId = this.getView().getModel("viewModel").getProperty("/currentUserId");
+
+            const urlParameters = {
+                "$expand": "pizza",
+                "$orderby": "modifiedAt desc",
+                "$top": "1"
+            };
+            if (currentUserId) {
+                urlParameters["$filter"] = "employeeId eq '" + currentUserId.replace(/'/g, "''") + "'";
+            }
+
             oModel.read("/EmployeePizza", {
-                urlParameters: {
-                    "$expand": "pizza",
-                    "$orderby": "modifiedAt desc",
-                    "$top": "1"
-                },
+                urlParameters: urlParameters,
                 success: function (oData) {
                     const record = (oData && oData.results && oData.results.length > 0) ? oData.results[0] : null;
                     self.getView().getModel("viewModel").setProperty("/preference", record);

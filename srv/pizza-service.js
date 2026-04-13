@@ -74,6 +74,7 @@ module.exports = cds.service.impl(function () {
 
     this.on("currentUser", (req) => ({
         id: req.user.id,
+        displayName: (req.user.attr && req.user.attr.displayName) || req.user.id,
         isEater: req.user.is("pizzaeater"),
         isOrderer: req.user.is("pizzaorderer")
     }));

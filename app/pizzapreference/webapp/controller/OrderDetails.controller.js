@@ -22,11 +22,35 @@ sap.ui.define([
                 unknownCount: 0,
                 unknownPizzas: 0,
                 unknownSliceLine: "",
-                totalPizzas: 0
+                totalPizzas: 0,
+                currentUserDisplayName: "",
+                showUserHeader: !sap.ushell
             }), "detailsModel");
 
             this.oRouter = sap.ui.core.UIComponent.getRouterFor(this);
             this.oRouter.getRoute("orderDetails").attachPatternMatched(this.onRoutePatternMatched, this);
+
+        },
+
+        _loadCurrentUser: function () {
+
+            const self = this;
+            const oModel = this.getOwnerComponent().getModel();
+            if (!oModel) {
+                return;
+            }
+
+            oModel.callFunction("/currentUser", {
+                method: "GET",
+                success: function (oData) {
+                    const result = (oData && oData.currentUser) ? oData.currentUser : oData;
+                    const displayName = result && result.displayName ? result.displayName : (result && result.id) || "";
+                    self.getView().getModel("detailsModel").setProperty("/currentUserDisplayName", displayName);
+                },
+                error: function (oError) {
+                    console.error("currentUser failed", oError);
+                }
+            });
 
         },
 
@@ -35,6 +59,8 @@ sap.ui.define([
             const self = this;
             const orderId = oEvent.getParameter("arguments").orderId;
             this._orderId = orderId;
+
+            this._loadCurrentUser();
 
             const oModel = this.getOwnerComponent().getModel();
             if (!oModel) {

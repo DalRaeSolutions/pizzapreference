@@ -168,7 +168,22 @@ sap.ui.define([
             },
 
             onLogout: function(){
-                sap.m.URLHelper.redirect("./logout.html", false);
+
+                console.log("[logout] onLogout fired");
+
+                try { window.localStorage.clear(); } catch (e) { /* ignored */ }
+                try { window.sessionStorage.clear(); } catch (e) { /* ignored */ }
+
+                document.cookie.split(";").forEach(function (c) {
+                    const name = c.split("=")[0].trim();
+                    if (!name) return;
+                    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+                });
+
+                console.log("[logout] navigating to /api/logout");
+                window.location.assign("/api/logout");
+
             }
             
         });

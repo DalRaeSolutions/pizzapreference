@@ -14,7 +14,6 @@ service PizzaService @(requires: ['pizzaeater', 'pizzaorderer']) {
     entity OrderParticipant  as projection on db.OrderParticipant;
 
     annotate EmployeePizza with @restrict: [
-        { grant: ['READ'], to: 'pizzaorderer' },
         { grant: ['READ', 'WRITE'], to: 'pizzaeater', where: 'employeeId = $user.id' }
     ];
 
@@ -27,9 +26,10 @@ service PizzaService @(requires: ['pizzaeater', 'pizzaorderer']) {
     ];
 
     type UserInfo {
-        id        : String;
-        isEater   : Boolean;
-        isOrderer : Boolean;
+        id          : String;
+        displayName : String;
+        isEater     : Boolean;
+        isOrderer   : Boolean;
     };
 
     function currentUser() returns UserInfo;

@@ -22,6 +22,16 @@
                             icon="sap-icon://refresh"
                             press="onRegenerateOrder"
                             tooltip="Re-match attendees against current preferences" />
+                        <ObjectStatus
+                            text="{detailsModel>/currentUserDisplayName}"
+                            icon="sap-icon://employee"
+                            visible="{detailsModel>/showUserHeader}"
+                            class="sapUiSmallMarginEnd sapUiSmallMarginBegin" />
+                        <Button
+                            icon="sap-icon://log"
+                            text="Logout"
+                            press="onLogout"
+                            visible="{detailsModel>/showUserHeader}" />
                     </headerContent>
 
                     <subHeader>

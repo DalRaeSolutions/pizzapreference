@@ -118,7 +118,7 @@
             "roles": ["pizzaeater", "pizzaorderer"],
             "attr": {
               "email": "both@acme.test",
-              "displayName": "Brad Smith",
+              "displayName": "Demo Both",
               "department": "Engineering"
             }
           }

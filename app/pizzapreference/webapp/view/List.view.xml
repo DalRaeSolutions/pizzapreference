@@ -9,6 +9,18 @@
         <App id="app">
             <pages>
                 <Page id="apppage" title="{i18n>listTitle}">
+                    <headerContent>
+                        <ObjectStatus
+                            text="{viewModel>/currentUserDisplayName}"
+                            icon="sap-icon://employee"
+                            visible="{viewModel>/showUserHeader}"
+                            class="sapUiSmallMarginEnd" />
+                        <Button
+                            icon="sap-icon://log"
+                            text="Logout"
+                            press="onLogout"
+                            visible="{viewModel>/showUserHeader}" />
+                    </headerContent>
                     <content>
 
                         <IconTabBar id="idMainTabs" expandable="false" class="sapUiResponsiveContentPadding">
