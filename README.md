@@ -79,12 +79,23 @@ Flick the slice selector in the sub-header:
 
 The selector PATCHes the order so your choice persists across reloads.
 
+### Regenerate
+
+Orders are immutable snapshots by default — once created, they don't chase live preference changes. To opt in, hit the **Regenerate** button in the page header (top right of the order details view). It re-matches every existing participant against the current preference pool:
+
+- Unknowns who've since set a preference become matched
+- Matched participants pick up their owner's latest choice
+- Preferences that have been deleted become unmatched
+
+Try it end to end: create the demo order, log in as `frank` (if you add him as a pizzaeater in [package.json](package.json)) and record a preference, flip back to the orderer, hit **Regenerate** — Frank is now in the Shared pool and the capacity gap drops by one.
+
 ### What the demo proves
 
 - **Standing preferences are a pool, not event-bound.** Employees set their preference once.
 - **Customisations are personal.** A preference with notes becomes a whole pizza for that person — nobody else wants a slice of weird.
 - **Capacity gap for unknowns.** Attendees without a preference on file are counted and sized via the slice formula.
 - **Orders are immutable snapshots.** If `alice` changes her preference after an order is created, the existing order still shows what she had at the time. New orders pick up the new preference. Try it: edit alice's preference to Supreme, reload the order — she's still Vegetarian in that order; create a new order with the same paste — she's Supreme.
+- **Opt-in regeneration.** Immutability is the default, but the order details page has a **Regenerate** button in the header that re-matches every existing participant against the current preference pool. Attendees who've since set a preference become matched; matched participants pick up their owner's latest choice; preferences that have been deleted become unmatched again. Useful when an orderer builds an order early in the week and wants to refresh it before placing the real order on Friday.
 - **Role-gated UI.** Switch between `alice` / `orderer` / `both` to see tabs appear and disappear.
 - **Attribute flow.** `createdByName` on an order comes from `req.user.attr.displayName` — the same mechanism that reads an IAS-delivered attribute in production.
 

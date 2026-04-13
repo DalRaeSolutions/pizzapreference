@@ -78,6 +78,40 @@ module.exports = cds.service.impl(function () {
         isOrderer: req.user.is("pizzaorderer")
     }));
 
+    async function loadMatchContext() {
+        const [prefs, pizzas] = await Promise.all([
+            SELECT.from(EmployeePizza),
+            SELECT.from(Pizza)
+        ]);
+        const pizzasById = new Map(pizzas.map((p) => [p.ID, p]));
+        const byEmail = new Map();
+        const byName = new Map();
+        prefs.forEach((p) => {
+            if (p.email) byEmail.set(p.email.toLowerCase(), p);
+            if (p.displayName) byName.set(p.displayName.toLowerCase(), p);
+        });
+        return { pizzasById, byEmail, byName };
+    }
+
+    function matchSnapshot(attendee, ctx) {
+        const emailKey = attendee.email ? attendee.email.toLowerCase() : null;
+        const nameKey = attendee.displayName ? attendee.displayName.toLowerCase() : null;
+        let match = null;
+        if (emailKey && ctx.byEmail.has(emailKey)) {
+            match = ctx.byEmail.get(emailKey);
+        } else if (nameKey && ctx.byName.has(nameKey)) {
+            match = ctx.byName.get(nameKey);
+        }
+        const pizza = match && match.pizza_ID ? ctx.pizzasById.get(match.pizza_ID) : null;
+        return {
+            matched: !!match,
+            pizza_ID: match ? match.pizza_ID : null,
+            pizzaName: pizza ? pizza.name : null,
+            pizzaDescription: pizza ? pizza.description : null,
+            notes: match ? match.notes : null
+        };
+    }
+
     this.on("createOrderFromPaste", async (req) => {
 
         const { title, occurredAt, paste } = req.data;
@@ -87,17 +121,7 @@ module.exports = cds.service.impl(function () {
             return req.reject(400, "Could not find any attendees in the pasted text.");
         }
 
-        const [all, pizzas] = await Promise.all([
-            SELECT.from(EmployeePizza),
-            SELECT.from(Pizza)
-        ]);
-        const pizzasById = new Map(pizzas.map((p) => [p.ID, p]));
-        const byEmail = new Map();
-        const byName = new Map();
-        all.forEach((p) => {
-            if (p.email) byEmail.set(p.email.toLowerCase(), p);
-            if (p.displayName) byName.set(p.displayName.toLowerCase(), p);
-        });
+        const ctx = await loadMatchContext();
 
         const orderId = cds.utils.uuid();
         const createdByName = (req.user.attr && req.user.attr.displayName) || req.user.id;
@@ -110,28 +134,36 @@ module.exports = cds.service.impl(function () {
             slicesPerPerson: 3
         });
 
-        const participants = attendees.map((a) => {
-            let match = null;
-            if (a.email && byEmail.has(a.email)) {
-                match = byEmail.get(a.email);
-            } else if (a.displayName && byName.has(a.displayName.toLowerCase())) {
-                match = byName.get(a.displayName.toLowerCase());
-            }
-            const pizza = match && match.pizza_ID ? pizzasById.get(match.pizza_ID) : null;
-            return {
-                ID: cds.utils.uuid(),
-                order_ID: orderId,
-                email: a.email,
-                displayName: a.displayName,
-                matched: !!match,
-                pizza_ID: match ? match.pizza_ID : null,
-                pizzaName: pizza ? pizza.name : null,
-                pizzaDescription: pizza ? pizza.description : null,
-                notes: match ? match.notes : null
-            };
-        });
+        const participants = attendees.map((a) => ({
+            ID: cds.utils.uuid(),
+            order_ID: orderId,
+            email: a.email,
+            displayName: a.displayName,
+            ...matchSnapshot(a, ctx)
+        }));
 
         await INSERT.into(OrderParticipant).entries(participants);
+
+        return SELECT.one.from(PizzaOrder).where({ ID: orderId });
+
+    });
+
+    this.on("rematch", "PizzaOrder", async (req) => {
+
+        const orderId = req.params[0].ID;
+
+        const existing = await SELECT.one.from(PizzaOrder).where({ ID: orderId });
+        if (!existing) {
+            return req.reject(404, "Order not found.");
+        }
+
+        const ctx = await loadMatchContext();
+        const participants = await SELECT.from(OrderParticipant).where({ order_ID: orderId });
+
+        for (const p of participants) {
+            const snap = matchSnapshot({ email: p.email, displayName: p.displayName }, ctx);
+            await UPDATE(OrderParticipant).set(snap).where({ ID: p.ID });
+        }
 
         return SELECT.one.from(PizzaOrder).where({ ID: orderId });
 

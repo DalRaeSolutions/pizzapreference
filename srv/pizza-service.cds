@@ -7,7 +7,9 @@ service PizzaService @(requires: ['pizzaeater', 'pizzaorderer']) {
 
     entity EmployeePizza     as projection on db.EmployeePizza;
 
-    entity PizzaOrder        as projection on db.PizzaOrder;
+    entity PizzaOrder        as projection on db.PizzaOrder actions {
+        action rematch() returns PizzaOrder;
+    };
 
     entity OrderParticipant  as projection on db.OrderParticipant;
 

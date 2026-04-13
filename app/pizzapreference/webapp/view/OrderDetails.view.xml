@@ -15,6 +15,15 @@
                     showNavButton="true"
                     navButtonPress="onBack">
 
+                    <headerContent>
+                        <Button
+                            id="idRegenerateBtn"
+                            text="Regenerate"
+                            icon="sap-icon://refresh"
+                            press="onRegenerateOrder"
+                            tooltip="Re-match attendees against current preferences" />
+                    </headerContent>
+
                     <subHeader>
                         <Toolbar id="idOrderDetailsSubHeader">
                             <Label text="Date:" class="sapUiTinyMarginBegin" />
@@ -125,11 +134,12 @@
                                             <CustomListItem>
                                                 <HBox class="sapUiSmallMargin" alignItems="Center">
                                                     <core:Icon size="1.5rem" src="sap-icon://customize" class="sapUiSmallMarginEnd" />
-                                                    <VBox width="30%">
-                                                        <Label text="{detailsModel>displayName}" design="Bold" />
+                                                    <VBox width="45%">
+                                                        <Label text="{detailsModel>pizzaName}" design="Bold" />
+                                                        <Label text="{detailsModel>pizzaDescription}" />
                                                     </VBox>
-                                                    <VBox width="50%">
-                                                        <Label text="{detailsModel>pizzaName}" />
+                                                    <VBox width="35%">
+                                                        <Label text="{detailsModel>displayName}" design="Bold" />
                                                         <Label text="{detailsModel>notes}" />
                                                     </VBox>
                                                     <VBox width="20%" alignItems="End">

@@ -108,6 +108,7 @@ sap.ui.define([
                     custom.push({
                         displayName: p.displayName,
                         pizzaName: p.pizzaName,
+                        pizzaDescription: p.pizzaDescription,
                         notes: p.notes
                     });
                     return;
@@ -185,6 +186,68 @@ sap.ui.define([
             } else {
                 this.oRouter.navTo("list");
             }
+
+        },
+
+        onRegenerateOrder: function () {
+
+            const self = this;
+            if (!this._orderId) {
+                return;
+            }
+
+            MessageBox.confirm(
+                "Re-match all attendees against current preferences? Snapshot values will be overwritten.",
+                {
+                    title: "Regenerate order",
+                    actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+                    emphasizedAction: MessageBox.Action.OK,
+                    onClose: function (sAction) {
+                        if (sAction !== MessageBox.Action.OK) {
+                            return;
+                        }
+
+                        const oModel = self.getOwnerComponent().getModel();
+                        const path = "/PizzaOrder(guid'" + self._orderId + "')/rematch";
+
+                        oModel.callFunction(path, {
+                            method: "POST",
+                            success: function () {
+                                MessageBox.success("Order regenerated from current preferences.");
+                                self._reloadOrder();
+                            },
+                            error: function (oError) {
+                                console.error("rematch failed", oError);
+                                MessageBox.error("Regenerate failed.");
+                            }
+                        });
+                    }
+                }
+            );
+
+        },
+
+        _reloadOrder: function () {
+
+            const self = this;
+            const orderId = this._orderId;
+            if (!orderId) {
+                return;
+            }
+
+            const oModel = this.getOwnerComponent().getModel();
+            const path = "/PizzaOrder(guid'" + orderId + "')";
+            oModel.read(path, {
+                urlParameters: {
+                    "$expand": "participants"
+                },
+                success: function (oData) {
+                    self._applyOrder(oData);
+                },
+                error: function (oError) {
+                    console.error("Order reload failed", oError);
+                }
+            });
 
         }
 
