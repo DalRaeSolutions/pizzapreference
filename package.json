@@ -68,7 +68,8 @@
       "deploy-format": "hdbtable"
     },
     "cov2ap": {
-      "path": "v2"
+      "path": "v2",
+      "target": "http://127.0.0.1:4004"
     }
   }
 }
