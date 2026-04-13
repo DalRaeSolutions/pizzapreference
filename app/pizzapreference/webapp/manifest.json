@@ -120,6 +120,13 @@
                     "target": [
                         "list"
                     ]
+                },
+                {
+                    "pattern": "order/{orderId}",
+                    "name": "orderDetails",
+                    "target": [
+                        "orderDetails"
+                    ]
                 }
             ],
             "targets": {
@@ -129,6 +136,13 @@
                     "clearControlAggregation": false,
                     "viewId": "List",
                     "viewName": "List"
+                },
+                "orderDetails": {
+                    "viewType": "XML",
+                    "transition": "slide",
+                    "clearControlAggregation": false,
+                    "viewId": "OrderDetails",
+                    "viewName": "OrderDetails"
                 }
             }
         },

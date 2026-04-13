@@ -14,8 +14,7 @@ sap.ui.define([
 
             this.getView().setModel(new JSONModel({
                 preference: null,
-                teamFullList: [],
-                teamSummary: [],
+                orders: [],
                 isEater: false,
                 isOrderer: false
             }), "viewModel");
@@ -37,7 +36,7 @@ sap.ui.define([
                     self.loadPreference();
                 }
                 if (info && info.isOrderer) {
-                    self.loadTeamOrder();
+                    self.loadOrders();
                 }
             });
 
@@ -120,7 +119,7 @@ sap.ui.define([
 
         },
 
-        loadTeamOrder: function () {
+        loadOrders: function () {
 
             const self = this;
             const oModel = this.getOwnerComponent().getModel();
@@ -128,68 +127,37 @@ sap.ui.define([
                 return;
             }
 
-            oModel.read("/EmployeePizza", {
+            oModel.read("/PizzaOrder", {
                 urlParameters: {
-                    "$expand": "pizza",
-                    "$orderby": "employeeId asc"
+                    "$expand": "participants",
+                    "$orderby": "occurredAt desc,createdAt desc"
                 },
                 success: function (oData) {
                     const rows = (oData && oData.results) ? oData.results : [];
-                    const fullList = rows.map(function (r) {
+                    const orders = rows.map(function (o) {
+                        const participants = (o.participants && o.participants.results) || o.participants || [];
+                        let matched = 0;
+                        let unmatched = 0;
+                        participants.forEach(function (p) {
+                            if (p.matched) matched += 1;
+                            else unmatched += 1;
+                        });
                         return {
-                            employeeId: r.employeeId,
-                            pizzaName: r.pizza ? r.pizza.name : "",
-                            pizzaDescription: r.pizza ? r.pizza.description : "",
-                            notes: r.notes || ""
+                            ID: o.ID,
+                            title: o.title,
+                            occurredAt: o.occurredAt,
+                            slicesPerPerson: o.slicesPerPerson,
+                            participantCount: participants.length,
+                            matchedCount: matched,
+                            unmatchedCount: unmatched
                         };
                     });
-                    const vm = self.getView().getModel("viewModel");
-                    vm.setProperty("/teamFullList", fullList);
-                    vm.setProperty("/teamSummary", self._computeSummary(rows));
+                    self.getView().getModel("viewModel").setProperty("/orders", orders);
                 },
                 error: function (oError) {
-                    console.error("loadTeamOrder failed", oError);
+                    console.error("loadOrders failed", oError);
                 }
             });
-
-        },
-
-        _computeSummary: function (rows) {
-
-            const map = new Map();
-
-            rows.forEach(function (r) {
-                const key = r.pizza_ID || (r.pizza && r.pizza.ID);
-                if (!key) {
-                    return;
-                }
-                if (!map.has(key)) {
-                    map.set(key, {
-                        pizzaName: r.pizza ? r.pizza.name : "",
-                        pizzaDescription: r.pizza ? r.pizza.description : "",
-                        count: 0,
-                        notesList: []
-                    });
-                }
-                const entry = map.get(key);
-                entry.count += 1;
-                if (r.notes && r.notes.trim && r.notes.trim()) {
-                    entry.notesList.push(r.employeeId + ": " + r.notes);
-                }
-            });
-
-            return Array.from(map.values())
-                .map(function (e) {
-                    return {
-                        pizzaName: e.pizzaName,
-                        pizzaDescription: e.pizzaDescription,
-                        count: e.count,
-                        notes: e.notesList.join("; ")
-                    };
-                })
-                .sort(function (a, b) {
-                    return b.count - a.count;
-                });
 
         },
 
@@ -252,9 +220,6 @@ sap.ui.define([
                 self._pDialog.then(function (oDialog) { oDialog.close(); });
                 MessageBox.success("Preference saved.");
                 self.loadPreference();
-                if (self.getView().getModel("viewModel").getProperty("/isOrderer")) {
-                    self.loadTeamOrder();
-                }
             };
 
             const onError = function (oError) {
@@ -297,12 +262,142 @@ sap.ui.define([
                         success: function () {
                             MessageBox.success("Preference deleted.");
                             self.loadPreference();
-                            if (self.getView().getModel("viewModel").getProperty("/isOrderer")) {
-                                self.loadTeamOrder();
-                            }
                         },
                         error: function (oError) {
                             console.error("deletePreference failed", oError);
+                            MessageBox.error("Delete failed.");
+                        }
+                    });
+                }
+            });
+
+        },
+
+        onOpenCreateOrderDialog: function () {
+
+            const self = this;
+
+            this.setModelData({
+                title: "",
+                occurredAt: new Date().toISOString().slice(0, 10),
+                paste: ""
+            }, "createOrderModel");
+
+            if (!this._pCreateOrderDialog) {
+                this._pCreateOrderDialog = Fragment.load({
+                    id: this.getView().getId(),
+                    name: "com.dalraesolutions.pizzapreference.pizzapreference.view.CreateOrderDialog",
+                    controller: this
+                }).then(function (oDialog) {
+                    self.getView().addDependent(oDialog);
+                    return oDialog;
+                });
+            }
+
+            this._pCreateOrderDialog.then(function (oDialog) {
+                oDialog.open();
+            });
+
+        },
+
+        onCancelCreateOrder: function () {
+
+            if (!this._pCreateOrderDialog) {
+                return;
+            }
+            this._pCreateOrderDialog.then(function (oDialog) {
+                oDialog.close();
+            });
+
+        },
+
+        onSaveCreateOrder: function () {
+
+            const self = this;
+            const data = this.getModelData("createOrderModel");
+
+            const reasons = [];
+            if (!data || !data.title || !data.title.trim()) {
+                reasons.push("Title is required.");
+            }
+            if (!data || !data.occurredAt) {
+                reasons.push("Date is required.");
+            }
+            if (!data || !data.paste || !data.paste.trim()) {
+                reasons.push("Attendees paste is required.");
+            }
+            if (reasons.length > 0) {
+                MessageBox.warning(reasons.join("\n"));
+                return;
+            }
+
+            const oModel = this.getOwnerComponent().getModel();
+
+            oModel.callFunction("/createOrderFromPaste", {
+                method: "POST",
+                urlParameters: {
+                    title: data.title,
+                    occurredAt: data.occurredAt,
+                    paste: data.paste
+                },
+                success: function (oData) {
+                    const result = (oData && oData.createOrderFromPaste) ? oData.createOrderFromPaste : oData;
+                    self._pCreateOrderDialog.then(function (oDialog) { oDialog.close(); });
+                    MessageBox.success("Order created.");
+                    self.loadOrders();
+                    if (result && result.ID) {
+                        self.oRouter.navTo("orderDetails", { orderId: result.ID });
+                    }
+                },
+                error: function (oError) {
+                    console.error("createOrderFromPaste failed", oError);
+                    MessageBox.error("Could not create order. Check that the pasted text contains attendees.");
+                }
+            });
+
+        },
+
+        onOrderPress: function (oEvent) {
+
+            const oContext = oEvent.getSource().getBindingContext("viewModel");
+            if (!oContext) {
+                return;
+            }
+            const order = oContext.getObject();
+            if (order && order.ID) {
+                this.oRouter.navTo("orderDetails", { orderId: order.ID });
+            }
+
+        },
+
+        onDeleteOrder: function (oEvent) {
+
+            const self = this;
+            const oContext = oEvent.getSource().getBindingContext("viewModel");
+            if (!oContext) {
+                return;
+            }
+            const order = oContext.getObject();
+            if (!order || !order.ID) {
+                return;
+            }
+
+            MessageBox.confirm("Delete order '" + order.title + "'?", {
+                title: "Confirm",
+                actions: [MessageBox.Action.OK, MessageBox.Action.CANCEL],
+                emphasizedAction: MessageBox.Action.OK,
+                onClose: function (sAction) {
+                    if (sAction !== MessageBox.Action.OK) {
+                        return;
+                    }
+                    const oModel = self.getOwnerComponent().getModel();
+                    oModel.remove("/PizzaOrder(guid'" + order.ID + "')", {
+                        success: function () {
+                            MessageBox.success("Order deleted.");
+                            self.loadOrders();
+                        },
+                        error: function (oError) {
+                            console.error("deleteOrder failed", oError);
                             MessageBox.error("Delete failed.");
                         }
                     });

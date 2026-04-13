@@ -61,31 +61,66 @@
         "users": {
           "alice": {
             "password": "alice",
-            "roles": ["pizzaeater"]
+            "roles": ["pizzaeater"],
+            "attr": {
+              "email": "alice@acme.test",
+              "displayName": "Alice Anderson",
+              "department": "Engineering"
+            }
           },
           "bob": {
             "password": "bob",
-            "roles": ["pizzaeater"]
+            "roles": ["pizzaeater"],
+            "attr": {
+              "email": "bob@acme.test",
+              "displayName": "Bob Barnes",
+              "department": "Engineering"
+            }
           },
           "carol": {
             "password": "carol",
-            "roles": ["pizzaorderer"]
+            "roles": ["pizzaorderer"],
+            "attr": {
+              "email": "carol@acme.test",
+              "displayName": "Carol Chen",
+              "department": "Ops"
+            }
           },
           "dave": {
             "password": "dave",
-            "roles": ["pizzaorderer"]
+            "roles": ["pizzaorderer"],
+            "attr": {
+              "email": "dave@acme.test",
+              "displayName": "Dave Doyle",
+              "department": "Ops"
+            }
           },
           "eater": {
             "password": "eater",
-            "roles": ["pizzaeater"]
+            "roles": ["pizzaeater"],
+            "attr": {
+              "email": "eater@acme.test",
+              "displayName": "Demo Eater",
+              "department": "Sales"
+            }
           },
           "orderer": {
             "password": "orderer",
-            "roles": ["pizzaorderer"] 
+            "roles": ["pizzaorderer"],
+            "attr": {
+              "email": "orderer@acme.test",
+              "displayName": "Demo Orderer",
+              "department": "Ops"
+            }
           },
           "both": {
             "password": "both",
-            "roles": ["pizzaeater", "pizzaorderer"]
+            "roles": ["pizzaeater", "pizzaorderer"],
+            "attr": {
+              "email": "both@acme.test",
+              "displayName": "Brad Smith",
+              "department": "Engineering"
+            }
           }
         }
       }
