@@ -11,46 +11,136 @@
                 <Page id="apppage" title="{i18n>listTitle}">
                     <content>
 
-                        <Panel id="idEmployeePizzaRequestPanel" headerText="My Pizza Preference" class="sapUiSmallMargin">
-                            <content>
+                        <IconTabBar id="idMainTabs" expandable="false" class="sapUiResponsiveContentPadding">
+                            <items>
 
-                                <VBox class="sapUiMediumMargin" visible="{= !${viewModel>/preference} }">
-                                    <Text text="You have no pizza preference set." class="sapUiSmallMarginBottom" />
-                                    <Button
-                                        text="Add Pizza Preference"
-                                        icon="sap-icon://add"
-                                        type="Emphasized"
-                                        press="onOpenPreferenceDialog"
-                                        width="220px"
-                                        visible="{viewModel>/isEater}" />
-                                </VBox>
+                                <IconTabFilter
+                                    id="idMyPreferenceTab"
+                                    text="My Preference"
+                                    icon="sap-icon://meal"
+                                    visible="{viewModel>/isEater}">
 
-                                <HBox class="sapUiMediumMargin" visible="{= !!${viewModel>/preference} }">
-                                    <core:Icon size="3rem" src="sap-icon://meal" class="sapUiSmallMarginEnd sapUiSmallMarginTop" />
-                                    <VBox width="70%">
-                                        <Title text="{viewModel>/preference/pizza/name}" level="H3" />
-                                        <Label text="{viewModel>/preference/pizza/description}" />
-                                        <Label text="Notes: {viewModel>/preference/notes}" class="sapUiTinyMarginTop" />
-                                        <Label text="Last updated: { path: 'viewModel>/preference/modifiedAt', formatter: '.formatter.date' }" />
-                                    </VBox>
-                                    <VBox class="sapUiSmallMarginBegin" visible="{viewModel>/isEater}">
+                                    <VBox class="sapUiMediumMargin" visible="{= !${viewModel>/preference} }">
+                                        <Text text="You have no pizza preference set." class="sapUiSmallMarginBottom" />
                                         <Button
-                                            text="Edit"
-                                            icon="sap-icon://edit"
+                                            text="Add Pizza Preference"
+                                            icon="sap-icon://add"
+                                            type="Emphasized"
                                             press="onOpenPreferenceDialog"
-                                            width="110px"
-                                            class="sapUiTinyMarginBottom" />
-                                        <Button
-                                            text="Delete"
-                                            icon="sap-icon://delete"
-                                            type="Reject"
-                                            press="onDeletePreference"
-                                            width="110px" />
+                                            width="220px"
+                                            visible="{viewModel>/isEater}" />
                                     </VBox>
-                                </HBox>
 
-                            </content>
-                        </Panel>
+                                    <HBox class="sapUiMediumMargin" visible="{= !!${viewModel>/preference} }">
+                                        <core:Icon size="3rem" src="sap-icon://meal" class="sapUiSmallMarginEnd sapUiSmallMarginTop" />
+                                        <VBox width="70%">
+                                            <Title text="{viewModel>/preference/pizza/name}" level="H3" />
+                                            <Label text="{viewModel>/preference/pizza/description}" />
+                                            <Label text="Notes: {viewModel>/preference/notes}" class="sapUiTinyMarginTop" />
+                                            <Label text="Last updated: { path: 'viewModel>/preference/modifiedAt', formatter: '.formatter.date' }" />
+                                        </VBox>
+                                        <VBox class="sapUiSmallMarginBegin" visible="{viewModel>/isEater}">
+                                            <Button
+                                                text="Edit"
+                                                icon="sap-icon://edit"
+                                                press="onOpenPreferenceDialog"
+                                                width="110px"
+                                                class="sapUiTinyMarginBottom" />
+                                            <Button
+                                                text="Delete"
+                                                icon="sap-icon://delete"
+                                                type="Reject"
+                                                press="onDeletePreference"
+                                                width="110px" />
+                                        </VBox>
+                                    </HBox>
+
+                                </IconTabFilter>
+
+                                <IconTabFilter
+                                    id="idTeamOrderTab"
+                                    text="Team Order"
+                                    icon="sap-icon://group"
+                                    visible="{viewModel>/isOrderer}">
+
+                                    <IconTabBar id="idTeamTabs" expandable="false">
+                                        <items>
+
+                                            <IconTabFilter
+                                                id="idFullListTab"
+                                                text="Full List"
+                                                icon="sap-icon://list"
+                                                count="{= ${viewModel>/teamFullList}.length }">
+
+                                                <VBox class="sapUiMediumMargin" visible="{= ${viewModel>/teamFullList}.length === 0 }">
+                                                    <Text text="No preferences have been recorded yet." />
+                                                </VBox>
+
+                                                <List
+                                                    id="idTeamFullList"
+                                                    items="{ path: 'viewModel>/teamFullList' }"
+                                                    visible="{= ${viewModel>/teamFullList}.length > 0 }"
+                                                    noDataText="No preferences recorded">
+                                                    <CustomListItem>
+                                                        <HBox class="sapUiSmallMargin">
+                                                            <core:Icon size="1.5rem" src="sap-icon://employee" class="sapUiSmallMarginEnd sapUiTinyMarginTop" />
+                                                            <VBox width="30%">
+                                                                <Label text="{viewModel>employeeId}" design="Bold" />
+                                                            </VBox>
+                                                            <VBox width="35%">
+                                                                <Label text="{viewModel>pizzaName}" />
+                                                                <Label text="{viewModel>pizzaDescription}" />
+                                                            </VBox>
+                                                            <VBox width="35%">
+                                                                <Label text="Notes: {viewModel>notes}" />
+                                                            </VBox>
+                                                        </HBox>
+                                                    </CustomListItem>
+                                                </List>
+
+                                            </IconTabFilter>
+
+                                            <IconTabFilter
+                                                id="idSummaryTab"
+                                                text="Summary"
+                                                icon="sap-icon://sum"
+                                                count="{= ${viewModel>/teamSummary}.length }">
+
+                                                <VBox class="sapUiMediumMargin" visible="{= ${viewModel>/teamSummary}.length === 0 }">
+                                                    <Text text="No preferences have been recorded yet." />
+                                                </VBox>
+
+                                                <List
+                                                    id="idTeamSummaryList"
+                                                    items="{ path: 'viewModel>/teamSummary' }"
+                                                    visible="{= ${viewModel>/teamSummary}.length > 0 }"
+                                                    noDataText="No preferences recorded">
+                                                    <CustomListItem>
+                                                        <HBox class="sapUiSmallMargin">
+                                                            <core:Icon size="2rem" src="sap-icon://meal" class="sapUiSmallMarginEnd sapUiTinyMarginTop" />
+                                                            <VBox width="45%">
+                                                                <Title text="{viewModel>pizzaName}" level="H4" />
+                                                                <Label text="{viewModel>pizzaDescription}" />
+                                                            </VBox>
+                                                            <VBox width="15%" alignItems="Center" justifyContent="Center">
+                                                                <ObjectNumber number="{viewModel>count}" unit="×" emphasized="true" />
+                                                            </VBox>
+                                                            <VBox width="40%">
+                                                                <Label text="Notes: {viewModel>notes}" />
+                                                            </VBox>
+                                                        </HBox>
+                                                    </CustomListItem>
+                                                </List>
+
+                                            </IconTabFilter>
+
+                                        </items>
+                                    </IconTabBar>
+
+                                </IconTabFilter>
+
+                            </items>
+                        </IconTabBar>
 
                     </content>
                 </Page>

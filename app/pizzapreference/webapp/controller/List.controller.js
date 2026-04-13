@@ -14,6 +14,8 @@ sap.ui.define([
 
             this.getView().setModel(new JSONModel({
                 preference: null,
+                teamFullList: [],
+                teamSummary: [],
                 isEater: false,
                 isOrderer: false
             }), "viewModel");
@@ -25,10 +27,19 @@ sap.ui.define([
 
         onRoutePatternMatched: function () {
 
+            const self = this;
+
             this.scrollToTop();
-            this.loadCurrentUser();
             this.loadPizzas();
-            this.loadPreference();
+
+            this.loadCurrentUser().then(function (info) {
+                if (info && info.isEater) {
+                    self.loadPreference();
+                }
+                if (info && info.isOrderer) {
+                    self.loadTeamOrder();
+                }
+            });
 
         },
 
@@ -36,21 +47,31 @@ sap.ui.define([
 
             const self = this;
             const oModel = this.getOwnerComponent().getModel();
-            if (!oModel) {
-                return;
-            }
 
-            oModel.callFunction("/currentUser", {
-                method: "GET",
-                success: function (oData) {
-                    const result = (oData && oData.currentUser) ? oData.currentUser : oData;
-                    const vm = self.getView().getModel("viewModel");
-                    vm.setProperty("/isEater", !!(result && result.isEater));
-                    vm.setProperty("/isOrderer", !!(result && result.isOrderer));
-                },
-                error: function (oError) {
-                    console.error("currentUser failed", oError);
+            return new Promise(function (resolve) {
+                if (!oModel) {
+                    resolve({ isEater: false, isOrderer: false });
+                    return;
                 }
+                oModel.callFunction("/currentUser", {
+                    method: "GET",
+                    success: function (oData) {
+                        const result = (oData && oData.currentUser) ? oData.currentUser : oData;
+                        const info = {
+                            id: result ? result.id : null,
+                            isEater: !!(result && result.isEater),
+                            isOrderer: !!(result && result.isOrderer)
+                        };
+                        const vm = self.getView().getModel("viewModel");
+                        vm.setProperty("/isEater", info.isEater);
+                        vm.setProperty("/isOrderer", info.isOrderer);
+                        resolve(info);
+                    },
+                    error: function (oError) {
+                        console.error("currentUser failed", oError);
+                        resolve({ isEater: false, isOrderer: false });
+                    }
+                });
             });
 
         },
@@ -96,6 +117,79 @@ sap.ui.define([
                     console.error("loadPreference failed", oError);
                 }
             });
+
+        },
+
+        loadTeamOrder: function () {
+
+            const self = this;
+            const oModel = this.getOwnerComponent().getModel();
+            if (!oModel) {
+                return;
+            }
+
+            oModel.read("/EmployeePizza", {
+                urlParameters: {
+                    "$expand": "pizza",
+                    "$orderby": "employeeId asc"
+                },
+                success: function (oData) {
+                    const rows = (oData && oData.results) ? oData.results : [];
+                    const fullList = rows.map(function (r) {
+                        return {
+                            employeeId: r.employeeId,
+                            pizzaName: r.pizza ? r.pizza.name : "",
+                            pizzaDescription: r.pizza ? r.pizza.description : "",
+                            notes: r.notes || ""
+                        };
+                    });
+                    const vm = self.getView().getModel("viewModel");
+                    vm.setProperty("/teamFullList", fullList);
+                    vm.setProperty("/teamSummary", self._computeSummary(rows));
+                },
+                error: function (oError) {
+                    console.error("loadTeamOrder failed", oError);
+                }
+            });
+
+        },
+
+        _computeSummary: function (rows) {
+
+            const map = new Map();
+
+            rows.forEach(function (r) {
+                const key = r.pizza_ID || (r.pizza && r.pizza.ID);
+                if (!key) {
+                    return;
+                }
+                if (!map.has(key)) {
+                    map.set(key, {
+                        pizzaName: r.pizza ? r.pizza.name : "",
+                        pizzaDescription: r.pizza ? r.pizza.description : "",
+                        count: 0,
+                        notesList: []
+                    });
+                }
+                const entry = map.get(key);
+                entry.count += 1;
+                if (r.notes && r.notes.trim && r.notes.trim()) {
+                    entry.notesList.push(r.employeeId + ": " + r.notes);
+                }
+            });
+
+            return Array.from(map.values())
+                .map(function (e) {
+                    return {
+                        pizzaName: e.pizzaName,
+                        pizzaDescription: e.pizzaDescription,
+                        count: e.count,
+                        notes: e.notesList.join("; ")
+                    };
+                })
+                .sort(function (a, b) {
+                    return b.count - a.count;
+                });
 
         },
 
@@ -151,13 +245,16 @@ sap.ui.define([
             const oModel = this.getOwnerComponent().getModel();
             const payload = {
                 pizza_ID: data.pizza_ID,
-                notes: data.notes
+                notes: data.notes || ""
             };
 
             const onSuccess = function () {
                 self._pDialog.then(function (oDialog) { oDialog.close(); });
                 MessageBox.success("Preference saved.");
                 self.loadPreference();
+                if (self.getView().getModel("viewModel").getProperty("/isOrderer")) {
+                    self.loadTeamOrder();
+                }
             };
 
             const onError = function (oError) {
@@ -200,6 +297,9 @@ sap.ui.define([
                         success: function () {
                             MessageBox.success("Preference deleted.");
                             self.loadPreference();
+                            if (self.getView().getModel("viewModel").getProperty("/isOrderer")) {
+                                self.loadTeamOrder();
+                            }
                         },
                         error: function (oError) {
                             console.error("deletePreference failed", oError);
