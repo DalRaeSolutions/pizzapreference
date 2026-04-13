@@ -120,13 +120,6 @@
                     "target": [
                         "list"
                     ]
-                },
-                {
-                    "pattern": "create",
-                    "name": "create",
-                    "target": [
-                        "create"
-                    ]
                 }
             ],
             "targets": {
@@ -136,13 +129,6 @@
                     "clearControlAggregation": false,
                     "viewId": "List",
                     "viewName": "List"
-                },
-                "create": {
-                    "viewType": "XML",
-                    "transition": "slide",
-                    "clearControlAggregation": false,
-                    "viewId": "Create",
-                    "viewName": "Create"
                 }
             }
         },

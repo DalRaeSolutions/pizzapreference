@@ -10,4 +10,12 @@ service PizzaService @(requires: ['pizzaeater', 'pizzaorderer']) {
         { grant: ['READ', 'WRITE'], to: 'pizzaeater', where: 'employeeId = $user.id' }
     ];
 
+    type UserInfo {
+        id        : String;
+        isEater   : Boolean;
+        isOrderer : Boolean;
+    };
+
+    function currentUser() returns UserInfo;
+
 }
