@@ -21,6 +21,13 @@ sap.ui.define([
         }
 
         function handleResponse(response) {
+            if (response.status === 401) {
+                // Server rejected our credentials (no cookie yet, or cookie expired).
+                // Bounce to the login form. Returning a never-resolving promise stops
+                // the calling chain so MessageBox / catch handlers don't fire on the way out.
+                window.location.assign("/api/login");
+                return new Promise(function () {});
+            }
             if (response.status === 204) return null;
             if (!response.ok) {
                 return response.text().then(function (body) {
@@ -167,7 +174,6 @@ sap.ui.define([
             },
 
             scrollToTop: function(){
-                const self = this;
                 var oPage = this.getView().byId("idPage");
                 if(oPage)
                 {
@@ -180,14 +186,6 @@ sap.ui.define([
             },
 
             onLogout: function(){
-                try { window.localStorage.clear(); } catch (e) { /* ignored */ }
-                try { window.sessionStorage.clear(); } catch (e) { /* ignored */ }
-                document.cookie.split(";").forEach(function (c) {
-                    const name = c.split("=")[0].trim();
-                    if (!name) return;
-                    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-                    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
-                });
                 window.location.assign("/api/logout");
             }
 
