@@ -32,28 +32,6 @@ sap.ui.define([
 
         },
 
-        _loadCurrentUser: function () {
-
-            const self = this;
-            const oModel = this.getOwnerComponent().getModel();
-            if (!oModel) {
-                return;
-            }
-
-            oModel.callFunction("/currentUser", {
-                method: "GET",
-                success: function (oData) {
-                    const result = (oData && oData.currentUser) ? oData.currentUser : oData;
-                    const displayName = result && result.displayName ? result.displayName : (result && result.id) || "";
-                    self.getView().getModel("detailsModel").setProperty("/currentUserDisplayName", displayName);
-                },
-                error: function (oError) {
-                    console.error("currentUser failed", oError);
-                }
-            });
-
-        },
-
         onRoutePatternMatched: function (oEvent) {
 
             const self = this;
@@ -62,28 +40,32 @@ sap.ui.define([
 
             this._loadCurrentUser();
 
-            const oModel = this.getOwnerComponent().getModel();
-            if (!oModel) {
-                return;
-            }
-
-            const path = "/PizzaOrder(guid'" + orderId + "')";
-            oModel.read(path, {
-                urlParameters: {
-                    "$expand": "participants"
-                },
-                success: function (oData) {
-                    self._applyOrder(oData);
-                },
-                error: function (oError) {
-                    console.error("Order load failed", oError);
+            this.odataEntity("PizzaOrder", orderId, { "$expand": "participants" })
+                .then(function (order) {
+                    self._applyOrder(order);
+                })
+                .catch(function (err) {
+                    console.error("Order load failed", err);
                     MessageBox.error("Could not load order. Returning to list.", {
                         onClose: function () {
                             self.oRouter.navTo("list");
                         }
                     });
-                }
-            });
+                });
+
+        },
+
+        _loadCurrentUser: function () {
+
+            const self = this;
+            return this.odataFunction("currentUser")
+                .then(function (result) {
+                    const displayName = result && result.displayName ? result.displayName : (result && result.id) || "";
+                    self.getView().getModel("detailsModel").setProperty("/currentUserDisplayName", displayName);
+                })
+                .catch(function (err) {
+                    console.error("currentUser failed", err);
+                });
 
         },
 
@@ -94,7 +76,7 @@ sap.ui.define([
             dm.setProperty("/order", order);
             dm.setProperty("/slicesPerPerson", order.slicesPerPerson || 3);
 
-            const rawParticipants = (order.participants && order.participants.results) || order.participants || [];
+            const rawParticipants = order.participants || [];
 
             const participants = rawParticipants.map(function (p) {
                 return {
@@ -120,7 +102,6 @@ sap.ui.define([
             const participants = dm.getProperty("/participants") || [];
             const s = dm.getProperty("/slicesPerPerson") || 3;
 
-            // Shared: matched + no notes → grouped by pizza
             const shared = new Map();
             const custom = [];
             let unknownCount = 0;
@@ -182,7 +163,6 @@ sap.ui.define([
 
         onSlicesPerPersonChange: function (oEvent) {
 
-            const self = this;
             const newKey = oEvent.getParameter("item").getKey();
             const newValue = parseInt(newKey, 10);
 
@@ -194,14 +174,11 @@ sap.ui.define([
                 return;
             }
 
-            const oModel = this.getOwnerComponent().getModel();
-            const path = "/PizzaOrder(guid'" + this._orderId + "')";
-            oModel.update(path, { slicesPerPerson: newValue }, {
-                error: function (oError) {
-                    console.error("slicesPerPerson update failed", oError);
+            this.odataPatch("PizzaOrder", this._orderId, { slicesPerPerson: newValue })
+                .catch(function (err) {
+                    console.error("slicesPerPerson update failed", err);
                     MessageBox.error("Could not save slices per person.");
-                }
-            });
+                });
 
         },
 
@@ -232,21 +209,16 @@ sap.ui.define([
                         if (sAction !== MessageBox.Action.OK) {
                             return;
                         }
-
-                        const oModel = self.getOwnerComponent().getModel();
-                        const path = "/PizzaOrder(guid'" + self._orderId + "')/rematch";
-
-                        oModel.callFunction(path, {
-                            method: "POST",
-                            success: function () {
+                        const path = "/PizzaOrder(" + self._orderId + ")/PizzaService.rematch";
+                        self.odataAction(path, {})
+                            .then(function () {
                                 MessageBox.success("Order regenerated from current preferences.");
                                 self._reloadOrder();
-                            },
-                            error: function (oError) {
-                                console.error("rematch failed", oError);
+                            })
+                            .catch(function (err) {
+                                console.error("rematch failed", err);
                                 MessageBox.error("Regenerate failed.");
-                            }
-                        });
+                            });
                     }
                 }
             );
@@ -256,24 +228,17 @@ sap.ui.define([
         _reloadOrder: function () {
 
             const self = this;
-            const orderId = this._orderId;
-            if (!orderId) {
+            if (!this._orderId) {
                 return;
             }
 
-            const oModel = this.getOwnerComponent().getModel();
-            const path = "/PizzaOrder(guid'" + orderId + "')";
-            oModel.read(path, {
-                urlParameters: {
-                    "$expand": "participants"
-                },
-                success: function (oData) {
-                    self._applyOrder(oData);
-                },
-                error: function (oError) {
-                    console.error("Order reload failed", oError);
-                }
-            });
+            this.odataEntity("PizzaOrder", this._orderId, { "$expand": "participants" })
+                .then(function (order) {
+                    self._applyOrder(order);
+                })
+                .catch(function (err) {
+                    console.error("Order reload failed", err);
+                });
 
         }
 

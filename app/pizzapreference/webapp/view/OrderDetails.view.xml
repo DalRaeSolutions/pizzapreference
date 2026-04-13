@@ -16,12 +16,6 @@
                     navButtonPress="onBack">
 
                     <headerContent>
-                        <Button
-                            id="idRegenerateBtn"
-                            text="Regenerate"
-                            icon="sap-icon://refresh"
-                            press="onRegenerateOrder"
-                            tooltip="Re-match attendees against current preferences" />
                         <ObjectStatus
                             text="{detailsModel>/currentUserDisplayName}"
                             icon="sap-icon://employee"
@@ -51,6 +45,13 @@
                                     <SegmentedButtonItem key="4" text="4" />
                                 </items>
                             </SegmentedButton>
+                            <Button
+                                id="idRegenerateBtn"
+                                text="Regenerate"
+                                icon="sap-icon://refresh"
+                                press="onRegenerateOrder"
+                                tooltip="Re-match attendees against current preferences"
+                                class="sapUiTinyMarginBegin" />
                         </Toolbar>
                     </subHeader>
 

@@ -18,7 +18,7 @@ service PizzaService @(requires: ['pizzaeater', 'pizzaorderer']) {
     ];
 
     annotate PizzaOrder with @restrict: [
-        { grant: ['READ', 'WRITE'], to: 'pizzaorderer' }
+        { grant: ['READ', 'WRITE', 'rematch'], to: 'pizzaorderer' }
     ];
 
     annotate OrderParticipant with @restrict: [

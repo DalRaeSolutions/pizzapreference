@@ -15,18 +15,18 @@
         "destination": "ui5"
       },
       {
-        "source": "^/v2/(.*)$",
+        "source": "^/odata/(.*)$",
         "authenticationType": "xsuaa",
         "destination": "pizzapreference-api",
         "csrfProtection": false,
-        "target": "/v2/$1"
+        "target": "/odata/$1"
     },
     {
-        "source": "^/rest/(.*)$",
+        "source": "^/api/(.*)$",
         "authenticationType": "xsuaa",
         "destination": "pizzapreference-api",
         "csrfProtection": false,
-        "target": "/rest/$1"
+        "target": "/api/$1"
     },
     {
         "source": "^/srv-api/(.*)$",

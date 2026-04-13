@@ -12,10 +12,10 @@
         "resources": "resources.json",
         "dataSources": {
 			"pizzapreference": {
-				"uri": "v2/pizza/",
+				"uri": "odata/v4/pizza/",
 				"type": "OData",
 				"settings": {
-                    "odataVersion": "2.0"
+                    "odataVersion": "4.0"
 				}
 			}
 		},
@@ -86,14 +86,14 @@
                 }
             },
             "":{
+                "type": "sap.ui.model.odata.v4.ODataModel",
                 "dataSource": "pizzapreference",
-				"preload": true,
-				"settings": {
-					"groupId": "$auto",
-					"synchronizationMode": "None",
-					"operationMode": "Server",
-					"autoExpandSelect": true
-				}
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "groupId": "$direct"
+                }
             }
         },
         "resources": {

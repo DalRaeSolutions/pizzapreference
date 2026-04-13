@@ -48,107 +48,80 @@ sap.ui.define([
         loadCurrentUser: function () {
 
             const self = this;
-            const oModel = this.getOwnerComponent().getModel();
+            const vm = this.getView().getModel("viewModel");
 
-            return new Promise(function (resolve) {
-                if (!oModel) {
-                    resolve({ isEater: false, isOrderer: false });
-                    return;
-                }
-                oModel.callFunction("/currentUser", {
-                    method: "GET",
-                    success: function (oData) {
-                        const result = (oData && oData.currentUser) ? oData.currentUser : oData;
-                        const info = {
-                            id: result ? result.id : null,
-                            displayName: result && result.displayName ? result.displayName : (result && result.id) || "",
-                            isEater: !!(result && result.isEater),
-                            isOrderer: !!(result && result.isOrderer)
-                        };
-                        const vm = self.getView().getModel("viewModel");
-                        vm.setProperty("/currentUserId", info.id);
-                        vm.setProperty("/currentUserDisplayName", info.displayName);
-                        vm.setProperty("/isEater", info.isEater);
-                        vm.setProperty("/isOrderer", info.isOrderer);
-                        resolve(info);
-                    },
-                    error: function (oError) {
-                        console.error("currentUser failed", oError);
-                        resolve({ isEater: false, isOrderer: false });
-                    }
+            return this.odataFunction("currentUser")
+                .then(function (result) {
+                    const info = {
+                        id: result ? result.id : null,
+                        displayName: result && result.displayName ? result.displayName : (result && result.id) || "",
+                        isEater: !!(result && result.isEater),
+                        isOrderer: !!(result && result.isOrderer)
+                    };
+                    vm.setProperty("/currentUserId", info.id);
+                    vm.setProperty("/currentUserDisplayName", info.displayName);
+                    vm.setProperty("/isEater", info.isEater);
+                    vm.setProperty("/isOrderer", info.isOrderer);
+                    return info;
+                })
+                .catch(function (err) {
+                    console.error("currentUser failed", err);
+                    return { isEater: false, isOrderer: false };
                 });
-            });
 
         },
 
         loadPizzas: function () {
 
             const self = this;
-            const oModel = this.getOwnerComponent().getModel();
-            if (!oModel) {
-                return;
-            }
-
-            oModel.read("/Pizza", {
-                success: function (oData) {
-                    self.setModelData(oData, "pizzaModel");
-                },
-                error: function (oError) {
-                    console.error("loadPizzas failed", oError);
-                }
-            });
+            return this.odataCollection("Pizza")
+                .then(function (rows) {
+                    self.setModelData({ results: rows }, "pizzaModel");
+                })
+                .catch(function (err) {
+                    console.error("loadPizzas failed", err);
+                });
 
         },
 
         loadPreference: function () {
 
             const self = this;
-            const oModel = this.getOwnerComponent().getModel();
-            if (!oModel) {
-                return;
-            }
+            const vm = this.getView().getModel("viewModel");
+            const currentUserId = vm.getProperty("/currentUserId");
 
-            const currentUserId = this.getView().getModel("viewModel").getProperty("/currentUserId");
-
-            const urlParameters = {
+            const params = {
                 "$expand": "pizza",
                 "$orderby": "modifiedAt desc",
                 "$top": "1"
             };
             if (currentUserId) {
-                urlParameters["$filter"] = "employeeId eq '" + currentUserId.replace(/'/g, "''") + "'";
+                params["$filter"] = "employeeId eq '" + currentUserId.replace(/'/g, "''") + "'";
             }
 
-            oModel.read("/EmployeePizza", {
-                urlParameters: urlParameters,
-                success: function (oData) {
-                    const record = (oData && oData.results && oData.results.length > 0) ? oData.results[0] : null;
-                    self.getView().getModel("viewModel").setProperty("/preference", record);
-                },
-                error: function (oError) {
-                    console.error("loadPreference failed", oError);
-                }
-            });
+            return this.odataCollection("EmployeePizza", params)
+                .then(function (rows) {
+                    const record = rows.length > 0 ? rows[0] : null;
+                    vm.setProperty("/preference", record);
+                })
+                .catch(function (err) {
+                    console.error("loadPreference failed", err);
+                });
 
         },
 
         loadOrders: function () {
 
             const self = this;
-            const oModel = this.getOwnerComponent().getModel();
-            if (!oModel) {
-                return;
-            }
+            const params = {
+                "$expand": "participants",
+                "$orderby": "occurredAt desc,createdAt desc"
+            };
 
-            oModel.read("/PizzaOrder", {
-                urlParameters: {
-                    "$expand": "participants",
-                    "$orderby": "occurredAt desc,createdAt desc"
-                },
-                success: function (oData) {
-                    const rows = (oData && oData.results) ? oData.results : [];
+            return this.odataCollection("PizzaOrder", params)
+                .then(function (rows) {
                     const orders = rows.map(function (o) {
-                        const participants = (o.participants && o.participants.results) || o.participants || [];
+                        const participants = o.participants || [];
                         let matched = 0;
                         let unmatched = 0;
                         participants.forEach(function (p) {
@@ -166,11 +139,10 @@ sap.ui.define([
                         };
                     });
                     self.getView().getModel("viewModel").setProperty("/orders", orders);
-                },
-                error: function (oError) {
-                    console.error("loadOrders failed", oError);
-                }
-            });
+                })
+                .catch(function (err) {
+                    console.error("loadOrders failed", err);
+                });
 
         },
 
@@ -223,7 +195,6 @@ sap.ui.define([
                 return;
             }
 
-            const oModel = this.getOwnerComponent().getModel();
             const payload = {
                 pizza_ID: data.pizza_ID,
                 notes: data.notes || ""
@@ -235,21 +206,15 @@ sap.ui.define([
                 self.loadPreference();
             };
 
-            const onError = function (oError) {
-                console.error("savePreference failed", oError);
+            const onError = function (err) {
+                console.error("savePreference failed", err);
                 MessageBox.error("Save failed.");
             };
 
             if (data.ID) {
-                oModel.update("/EmployeePizza(guid'" + data.ID + "')", payload, {
-                    success: onSuccess,
-                    error: onError
-                });
+                this.odataPatch("EmployeePizza", data.ID, payload).then(onSuccess).catch(onError);
             } else {
-                oModel.create("/EmployeePizza", payload, {
-                    success: onSuccess,
-                    error: onError
-                });
+                this.odataCreate("EmployeePizza", payload).then(onSuccess).catch(onError);
             }
 
         },
@@ -270,17 +235,15 @@ sap.ui.define([
                     if (sAction !== MessageBox.Action.OK) {
                         return;
                     }
-                    const oModel = self.getOwnerComponent().getModel();
-                    oModel.remove("/EmployeePizza(guid'" + pref.ID + "')", {
-                        success: function () {
+                    self.odataDelete("EmployeePizza", pref.ID)
+                        .then(function () {
                             MessageBox.success("Preference deleted.");
                             self.loadPreference();
-                        },
-                        error: function (oError) {
-                            console.error("deletePreference failed", oError);
+                        })
+                        .catch(function (err) {
+                            console.error("deletePreference failed", err);
                             MessageBox.error("Delete failed.");
-                        }
-                    });
+                        });
                 }
             });
 
@@ -344,29 +307,23 @@ sap.ui.define([
                 return;
             }
 
-            const oModel = this.getOwnerComponent().getModel();
-
-            oModel.callFunction("/createOrderFromPaste", {
-                method: "POST",
-                urlParameters: {
-                    title: data.title,
-                    occurredAt: data.occurredAt,
-                    paste: data.paste
-                },
-                success: function (oData) {
-                    const result = (oData && oData.createOrderFromPaste) ? oData.createOrderFromPaste : oData;
+            this.odataAction("/createOrderFromPaste", {
+                title: data.title,
+                occurredAt: data.occurredAt,
+                paste: data.paste
+            })
+                .then(function (result) {
                     self._pCreateOrderDialog.then(function (oDialog) { oDialog.close(); });
                     MessageBox.success("Order created.");
                     self.loadOrders();
                     if (result && result.ID) {
                         self.oRouter.navTo("orderDetails", { orderId: result.ID });
                     }
-                },
-                error: function (oError) {
-                    console.error("createOrderFromPaste failed", oError);
+                })
+                .catch(function (err) {
+                    console.error("createOrderFromPaste failed", err);
                     MessageBox.error("Could not create order. Check that the pasted text contains attendees.");
-                }
-            });
+                });
 
         },
 
@@ -403,17 +360,15 @@ sap.ui.define([
                     if (sAction !== MessageBox.Action.OK) {
                         return;
                     }
-                    const oModel = self.getOwnerComponent().getModel();
-                    oModel.remove("/PizzaOrder(guid'" + order.ID + "')", {
-                        success: function () {
+                    self.odataDelete("PizzaOrder", order.ID)
+                        .then(function () {
                             MessageBox.success("Order deleted.");
                             self.loadOrders();
-                        },
-                        error: function (oError) {
-                            console.error("deleteOrder failed", oError);
+                        })
+                        .catch(function (err) {
+                            console.error("deleteOrder failed", err);
                             MessageBox.error("Delete failed.");
-                        }
-                    });
+                        });
                 }
             });
 

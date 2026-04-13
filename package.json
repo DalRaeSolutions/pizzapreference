@@ -9,7 +9,6 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@cap-js-community/odata-v2-adapter": "^1.15.10",
     "@cap-js/hana": "^2.7.0",
     "@sap/cds": "^9.8.5",
     "@sap/xssec": "^4.13.0",
@@ -133,10 +132,6 @@
     },
     "hana": {
       "deploy-format": "hdbtable"
-    },
-    "cov2ap": {
-      "path": "v2",
-      "target": "http://127.0.0.1:4004"
     }
   }
 }
