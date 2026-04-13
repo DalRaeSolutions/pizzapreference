@@ -56,7 +56,39 @@
           "url": ":memory:"
         }
       },
-      "auth": "mocked"
+      "auth": {
+        "kind": "mocked",
+        "users": {
+          "alice": {
+            "password": "alice",
+            "roles": ["pizzaeater"]
+          },
+          "bob": {
+            "password": "bob",
+            "roles": ["pizzaeater"]
+          },
+          "carol": {
+            "password": "carol",
+            "roles": ["pizzaorderer"]
+          },
+          "dave": {
+            "password": "dave",
+            "roles": ["pizzaorderer"]
+          },
+          "eater": {
+            "password": "eater",
+            "roles": ["pizzaeater"]
+          },
+          "orderer": {
+            "password": "orderer",
+            "roles": ["pizzaorderer"] 
+          },
+          "both": {
+            "password": "both",
+            "roles": ["pizzaeater", "pizzaorderer"]
+          }
+        }
+      }
     },
     "[production]": {
       "requires": {

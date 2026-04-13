@@ -2,25 +2,43 @@
     "tenant-mode": "dedicated",
     "scopes": [
         {
-            "name": "$XSAPPNAME.pizzapreferenceemployee",
-            "description": "Pizza Preference Employee"
+            "name": "$XSAPPNAME.pizzaeater",
+            "description": "Records own pizza preference"
+        },
+        {
+            "name": "$XSAPPNAME.pizzaorderer",
+            "description": "Places the group pizza order"
         }
     ],
     "role-templates": [
         {
-            "name": "pizzapreferenceemployee",
-            "description": "Pizza Preference Employee",
+            "name": "pizzaeater",
+            "description": "Pizza Eater",
             "scope-references": [
-                "$XSAPPNAME.pizzapreferenceemployee"
+                "$XSAPPNAME.pizzaeater"
+            ]
+        },
+        {
+            "name": "pizzaorderer",
+            "description": "Pizza Orderer",
+            "scope-references": [
+                "$XSAPPNAME.pizzaorderer"
             ]
         }
     ],
     "role-collections": [
         {
-            "name": "pizzapreferenceemployee",
-            "description": "Pizza Preference Employee",
+            "name": "pizzaeater",
+            "description": "Pizza Eater",
             "role-template-references": [
-                "$XSAPPNAME.pizzapreferenceemployee"
+                "$XSAPPNAME.pizzaeater"
+            ]
+        },
+        {
+            "name": "pizzaorderer",
+            "description": "Pizza Orderer",
+            "role-template-references": [
+                "$XSAPPNAME.pizzaorderer"
             ]
         }
     ]
