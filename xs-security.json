@@ -2,25 +2,70 @@
     "tenant-mode": "dedicated",
     "scopes": [
         {
-            "name": "$XSAPPNAME.pizzapreferenceemployee",
-            "description": "Pizza Preference Employee"
+            "name": "$XSAPPNAME.pizzaeater",
+            "description": "Records own pizza preference"
+        },
+        {
+            "name": "$XSAPPNAME.pizzaorderer",
+            "description": "Places the group pizza order"
+        }
+    ],
+    "attributes": [
+        {
+            "name": "email",
+            "description": "User email address",
+            "valueType": "string"
+        },
+        {
+            "name": "displayName",
+            "description": "User display name",
+            "valueType": "string"
+        },
+        {
+            "name": "department",
+            "description": "User department",
+            "valueType": "string"
         }
     ],
     "role-templates": [
         {
-            "name": "pizzapreferenceemployee",
-            "description": "Pizza Preference Employee",
+            "name": "pizzaeater",
+            "description": "Pizza Eater",
             "scope-references": [
-                "$XSAPPNAME.pizzapreferenceemployee"
+                "$XSAPPNAME.pizzaeater"
+            ],
+            "attribute-references": [
+                "email",
+                "displayName",
+                "department"
+            ]
+        },
+        {
+            "name": "pizzaorderer",
+            "description": "Pizza Orderer",
+            "scope-references": [
+                "$XSAPPNAME.pizzaorderer"
+            ],
+            "attribute-references": [
+                "email",
+                "displayName",
+                "department"
             ]
         }
     ],
     "role-collections": [
         {
-            "name": "pizzapreferenceemployee",
-            "description": "Pizza Preference Employee",
+            "name": "pizzaeater",
+            "description": "Pizza Eater",
             "role-template-references": [
-                "$XSAPPNAME.pizzapreferenceemployee"
+                "$XSAPPNAME.pizzaeater"
+            ]
+        },
+        {
+            "name": "pizzaorderer",
+            "description": "Pizza Orderer",
+            "role-template-references": [
+                "$XSAPPNAME.pizzaorderer"
             ]
         }
     ]

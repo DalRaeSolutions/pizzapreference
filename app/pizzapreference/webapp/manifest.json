@@ -41,13 +41,7 @@
 		"public": true,
 		"service": "pizzapreference"
     },
-    
-    "sap.cloud.portal": {
-        "sopizzapreference-display": {
-            "vizType": "com.dalraesolutions.pizzapreference.pizzapreferencetile"
-        }
-    },
-    
+
     "sap.ui": {
         "technology": "UI5",
         "icons": {
@@ -73,7 +67,7 @@
             "id": "App"
         },
         "dependencies": {
-            "minUI5Version": "1.66.0",
+            "minUI5Version": "1.120.0",
             "libs": {
                 "sap.ui.core": {},
                 "sap.m": {},
@@ -128,10 +122,10 @@
                     ]
                 },
                 {
-                    "pattern": "create",
-                    "name": "create",
+                    "pattern": "order/{orderId}",
+                    "name": "orderDetails",
                     "target": [
-                        "create"
+                        "orderDetails"
                     ]
                 }
             ],
@@ -143,12 +137,12 @@
                     "viewId": "List",
                     "viewName": "List"
                 },
-                "create": {
+                "orderDetails": {
                     "viewType": "XML",
                     "transition": "slide",
                     "clearControlAggregation": false,
-                    "viewId": "Create",
-                    "viewName": "Create"
+                    "viewId": "OrderDetails",
+                    "viewName": "OrderDetails"
                 }
             }
         },

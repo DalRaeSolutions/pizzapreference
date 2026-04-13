@@ -3,58 +3,121 @@
     xmlns:mvc="sap.ui.core.mvc"
     displayBlock="true"
     xmlns="sap.m"
-    xmlns:l="sap.ui.layout"
-    xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
-    xmlns:data="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
 >
-	<Shell id="shell">
-		<App id="app">
-			<pages>
-				<Page id="apppage" title="{i18n>listTitle}">
-					<content>
+    <Shell id="shell">
+        <App id="app">
+            <pages>
+                <Page id="apppage" title="{i18n>listTitle}">
+                    <content>
 
-                        <Panel id="idEmployeePizzaRequestPanel">
-                            <content>
+                        <IconTabBar id="idMainTabs" expandable="false" class="sapUiResponsiveContentPadding">
+                            <items>
 
-                                <VBox class="sapUiSmallMargin">
+                                <IconTabFilter
+                                    id="idMyPreferenceTab"
+                                    text="My Preference"
+                                    icon="sap-icon://meal"
+                                    visible="{viewModel>/isEater}">
 
-                                    <Button text="Add Pizza Preference" press="onCreateonEmployeePizzaRequest" visible="{= ${listModel>/count} === 0}" />
+                                    <VBox class="sapUiMediumMargin" visible="{= !${viewModel>/preference} }">
+                                        <Text text="You have no pizza preference set." class="sapUiSmallMarginBottom" />
+                                        <Button
+                                            text="Add Pizza Preference"
+                                            icon="sap-icon://add"
+                                            type="Emphasized"
+                                            press="onOpenPreferenceDialog"
+                                            width="220px"
+                                            visible="{viewModel>/isEater}" />
+                                    </VBox>
 
-                                    <List id="idEmployeePizzaRequestList" 
-                                        items="{ path: '/EmployeePizza', parameters: {'expand': 'pizza', $count : true}, sorter: { path: 'createdAt', descending: true } }" 
-                                        mode="None" 
-                                        noDataText="No records found" 
-                                        growing="true" 
-                                        growingScrollToLoad="true">
+                                    <HBox class="sapUiMediumMargin" visible="{= !!${viewModel>/preference} }">
+                                        <core:Icon size="3rem" src="sap-icon://meal" class="sapUiSmallMarginEnd sapUiSmallMarginTop" />
+                                        <VBox width="70%">
+                                            <Title text="{viewModel>/preference/pizza/name}" level="H3" />
+                                            <Label text="{viewModel>/preference/pizza/description}" />
+                                            <Label text="Notes: {viewModel>/preference/notes}" class="sapUiTinyMarginTop" />
+                                            <Label text="Last updated: { path: 'viewModel>/preference/modifiedAt', formatter: '.formatter.date' }" />
+                                        </VBox>
+                                        <VBox class="sapUiSmallMarginBegin" visible="{viewModel>/isEater}">
+                                            <Button
+                                                text="Edit"
+                                                icon="sap-icon://edit"
+                                                press="onOpenPreferenceDialog"
+                                                width="110px"
+                                                class="sapUiTinyMarginBottom" />
+                                            <Button
+                                                text="Delete"
+                                                icon="sap-icon://delete"
+                                                type="Reject"
+                                                press="onDeletePreference"
+                                                width="110px" />
+                                        </VBox>
+                                    </HBox>
 
-                                        <CustomListItem>
-                                            <HBox>
-                                                <core:Icon size="2rem" src="sap-icon://meal" class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom" width="10%"/>
-                                                <VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom" width="20%">
-                                                    <Label text="{ path: 'createdAt', formatter: '.formatter.date' }"/>
-                                                    
-                                                </VBox>
-                                                <VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom" width="50%">
-                                                    <Label text="Pizza: {pizza/name}"/>
-                                                    <Label text="Description: {pizza/description}"/>
-                                                    <Label text="Notes: {notes}"/>
-                                                </VBox>
-                                                <VBox width="125px">
-                                                    <Button text="Delete" width="100px" type="Reject" data:id="{ID}" press="onDeleteEmployeePizza" icon="sap-icon://delete" />
-                                                </VBox>
-                                            </HBox>
-                                        </CustomListItem>
-                                    </List>
+                                </IconTabFilter>
 
-                                </VBox>
-                            </content>
-                        </Panel>
+                                <IconTabFilter
+                                    id="idTeamOrderTab"
+                                    text="Team Order"
+                                    icon="sap-icon://group"
+                                    visible="{viewModel>/isOrderer}">
 
+                                    <VBox class="sapUiSmallMargin">
+
+                                        <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiSmallMarginBottom">
+                                            <Title text="My Pizza Orders" level="H3" />
+                                            <Button
+                                                text="New Order from Meeting"
+                                                icon="sap-icon://group"
+                                                type="Emphasized"
+                                                press="onOpenCreateOrderDialog" />
+                                        </HBox>
+
+                                        <VBox class="sapUiMediumMargin" visible="{= ${viewModel>/orders}.length === 0 }">
+                                            <Text text="You haven't created any orders yet. Paste a meeting attendee list to get started." />
+                                        </VBox>
+
+                                        <List
+                                            id="idOrdersList"
+                                            items="{ path: 'viewModel>/orders' }"
+                                            visible="{= ${viewModel>/orders}.length > 0 }"
+                                            noDataText="No orders recorded">
+                                            <CustomListItem type="Active" press="onOrderPress">
+                                                <HBox class="sapUiSmallMargin" alignItems="Center">
+                                                    <core:Icon size="2rem" src="sap-icon://group" class="sapUiSmallMarginEnd" />
+                                                    <VBox width="60%">
+                                                        <Title text="{viewModel>title}" level="H4" />
+                                                        <Label text="{ path: 'viewModel>occurredAt', formatter: '.formatter.date' }" />
+                                                        <Label text="{ parts: ['viewModel>matchedCount', 'viewModel>unmatchedCount'], formatter: '.formatter.orderSubtitle' }" />
+                                                    </VBox>
+                                                    <VBox width="25%" alignItems="Center" justifyContent="Center">
+                                                        <ObjectNumber
+                                                            number="{viewModel>participantCount}"
+                                                            unit="attendees"
+                                                            emphasized="true" />
+                                                    </VBox>
+                                                    <VBox width="15%" alignItems="End">
+                                                        <Button
+                                                            icon="sap-icon://delete"
+                                                            type="Reject"
+                                                            press="onDeleteOrder"
+                                                            tooltip="Delete order" />
+                                                    </VBox>
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+
+                                    </VBox>
+
+                                </IconTabFilter>
+
+                            </items>
+                        </IconTabBar>
 
                     </content>
-				</Page>
-			</pages>
-		</App>
-	</Shell>
+                </Page>
+            </pages>
+        </App>
+    </Shell>
 </mvc:View>

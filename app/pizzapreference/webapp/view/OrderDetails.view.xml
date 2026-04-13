@@ -1,0 +1,191 @@
+<mvc:View
+    controllerName="com.dalraesolutions.pizzapreference.pizzapreference.controller.OrderDetails"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <Shell id="shell">
+        <App id="app">
+            <pages>
+
+                <Page
+                    id="idOrderDetailsPage"
+                    title="{detailsModel>/order/title}"
+                    showNavButton="true"
+                    navButtonPress="onBack">
+
+                    <headerContent>
+                        <Button
+                            id="idRegenerateBtn"
+                            text="Regenerate"
+                            icon="sap-icon://refresh"
+                            press="onRegenerateOrder"
+                            tooltip="Re-match attendees against current preferences" />
+                    </headerContent>
+
+                    <subHeader>
+                        <Toolbar id="idOrderDetailsSubHeader">
+                            <Label text="Date:" class="sapUiTinyMarginBegin" />
+                            <Label text="{ path: 'detailsModel>/order/occurredAt', formatter: '.formatter.date' }" design="Bold" />
+                            <ToolbarSpacer />
+                            <Label text="Slices per person:" />
+                            <SegmentedButton
+                                id="idSlicesPerPerson"
+                                selectedKey="{detailsModel>/slicesPerPerson}"
+                                selectionChange="onSlicesPerPersonChange">
+                                <items>
+                                    <SegmentedButtonItem key="1" text="1" />
+                                    <SegmentedButtonItem key="2" text="2" />
+                                    <SegmentedButtonItem key="3" text="3" />
+                                    <SegmentedButtonItem key="4" text="4" />
+                                </items>
+                            </SegmentedButton>
+                        </Toolbar>
+                    </subHeader>
+
+                    <content>
+
+                        <IconTabBar id="idOrderInnerTabs" expandable="false" class="sapUiResponsiveContentPadding">
+                            <items>
+
+                                <IconTabFilter
+                                    id="idFullListTab"
+                                    text="Full List"
+                                    icon="sap-icon://list"
+                                    count="{= ${detailsModel>/participants}.length }">
+
+                                    <List
+                                        id="idParticipantsList"
+                                        items="{ path: 'detailsModel>/participants' }"
+                                        noDataText="No attendees in this order">
+                                        <CustomListItem>
+                                            <HBox class="sapUiSmallMargin" alignItems="Center">
+                                                <core:Icon size="1.5rem" src="sap-icon://employee" class="sapUiSmallMarginEnd" />
+                                                <VBox width="35%">
+                                                    <Label text="{detailsModel>displayName}" design="Bold" />
+                                                    <Label text="{detailsModel>email}" />
+                                                </VBox>
+                                                <VBox width="35%">
+                                                    <Label text="{detailsModel>pizzaName}" visible="{= !!${detailsModel>pizzaName} }" />
+                                                    <Label text="{detailsModel>notes}" visible="{= !!${detailsModel>notes} }" />
+                                                    <ObjectStatus
+                                                        text="No preference on file"
+                                                        state="Warning"
+                                                        icon="sap-icon://message-warning"
+                                                        visible="{= !${detailsModel>pizzaName} }" />
+                                                </VBox>
+                                                <VBox width="30%" alignItems="End">
+                                                    <ObjectStatus
+                                                        text="Custom pizza"
+                                                        state="Information"
+                                                        icon="sap-icon://customize"
+                                                        visible="{= !!${detailsModel>notes} }" />
+                                                </VBox>
+                                            </HBox>
+                                        </CustomListItem>
+                                    </List>
+
+                                </IconTabFilter>
+
+                                <IconTabFilter
+                                    id="idSummaryTab"
+                                    text="Summary"
+                                    icon="sap-icon://sum"
+                                    count="{detailsModel>/totalPizzas}">
+
+                                    <VBox class="sapUiSmallMargin">
+
+                                        <Title text="Shared pizzas" level="H4" class="sapUiSmallMarginBottom" />
+                                        <VBox visible="{= ${detailsModel>/sharedPizzas}.length === 0 }" class="sapUiSmallMarginBegin">
+                                            <Text text="No shared pizzas in this order." />
+                                        </VBox>
+                                        <List
+                                            id="idSharedList"
+                                            items="{ path: 'detailsModel>/sharedPizzas' }"
+                                            visible="{= ${detailsModel>/sharedPizzas}.length > 0 }"
+                                            showSeparators="Inner">
+                                            <CustomListItem>
+                                                <HBox class="sapUiSmallMargin" alignItems="Center">
+                                                    <core:Icon size="1.5rem" src="sap-icon://meal" class="sapUiSmallMarginEnd" />
+                                                    <VBox width="45%">
+                                                        <Label text="{detailsModel>pizzaName}" design="Bold" />
+                                                        <Label text="{detailsModel>pizzaDescription}" />
+                                                    </VBox>
+                                                    <VBox width="35%">
+                                                        <Label text="{detailsModel>sliceLine}" />
+                                                    </VBox>
+                                                    <VBox width="20%" alignItems="End">
+                                                        <ObjectNumber number="{detailsModel>pizzaCount}" unit="×" emphasized="true" />
+                                                    </VBox>
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+
+                                        <Title text="Custom pizzas" level="H4" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                                        <VBox visible="{= ${detailsModel>/customPizzas}.length === 0 }" class="sapUiSmallMarginBegin">
+                                            <Text text="No customised preferences in this order." />
+                                        </VBox>
+                                        <List
+                                            id="idCustomList"
+                                            items="{ path: 'detailsModel>/customPizzas' }"
+                                            visible="{= ${detailsModel>/customPizzas}.length > 0 }"
+                                            showSeparators="Inner">
+                                            <CustomListItem>
+                                                <HBox class="sapUiSmallMargin" alignItems="Center">
+                                                    <core:Icon size="1.5rem" src="sap-icon://customize" class="sapUiSmallMarginEnd" />
+                                                    <VBox width="45%">
+                                                        <Label text="{detailsModel>pizzaName}" design="Bold" />
+                                                        <Label text="{detailsModel>pizzaDescription}" />
+                                                    </VBox>
+                                                    <VBox width="35%">
+                                                        <Label text="{detailsModel>displayName}" design="Bold" />
+                                                        <Label text="{detailsModel>notes}" />
+                                                    </VBox>
+                                                    <VBox width="20%" alignItems="End">
+                                                        <ObjectNumber number="1" unit="×" emphasized="true" />
+                                                    </VBox>
+                                                </HBox>
+                                            </CustomListItem>
+                                        </List>
+
+                                        <Title text="Capacity gap" level="H4" class="sapUiMediumMarginTop sapUiSmallMarginBottom" />
+                                        <VBox visible="{= ${detailsModel>/unknownCount} === 0 }" class="sapUiSmallMarginBegin">
+                                            <Text text="Everybody in this meeting has a preference on file." />
+                                        </VBox>
+                                        <HBox
+                                            visible="{= ${detailsModel>/unknownCount} > 0 }"
+                                            class="sapUiSmallMargin"
+                                            alignItems="Center">
+                                            <core:Icon size="1.5rem" src="sap-icon://message-warning" class="sapUiSmallMarginEnd" />
+                                            <VBox width="80%">
+                                                <Label text="{detailsModel>/unknownCount} attendees have no preference on file" design="Bold" />
+                                                <Label text="{detailsModel>/unknownSliceLine}" />
+                                            </VBox>
+                                            <VBox width="20%" alignItems="End">
+                                                <ObjectNumber number="{detailsModel>/unknownPizzas}" unit="×" emphasized="true" state="Warning" />
+                                            </VBox>
+                                        </HBox>
+
+                                        <Toolbar class="sapUiLargeMarginTop" design="Solid">
+                                            <Title text="Total" level="H3" />
+                                            <ToolbarSpacer />
+                                            <ObjectNumber
+                                                number="{detailsModel>/totalPizzas}"
+                                                unit="pizzas"
+                                                emphasized="true" />
+                                        </Toolbar>
+
+                                    </VBox>
+
+                                </IconTabFilter>
+
+                            </items>
+                        </IconTabBar>
+
+                    </content>
+                </Page>
+            </pages>
+        </App>
+    </Shell>
+</mvc:View>

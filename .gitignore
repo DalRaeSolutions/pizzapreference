@@ -1,6 +1,9 @@
 # CAP pizzapreference
 _out
 *.db
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 connection.properties
 default-*.json
 .cdsrc-private.json
@@ -32,9 +35,8 @@ mta_archives/
 app/pizzapreference/node_modules/
 app/pizzapreference/dist/
 app/pizzapreference/pizzapreference-content.zip
-app/pizzapreferencetile/node_modules/
-app/pizzapreferencetile/dist/
-app/pizzapreferencetile/pizzapreferencetile-content.zip
 Makefile_*.mta
 app/resources/pizzapreference-content.zip
-app/resources/pizzapreferencetile-content.zip
+
+
+.*/

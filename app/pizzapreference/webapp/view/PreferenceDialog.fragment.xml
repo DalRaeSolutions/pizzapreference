@@ -1,0 +1,54 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:f="sap.ui.layout.form"
+>
+    <Dialog
+        id="idPreferenceDialog"
+        title="{= ${dialogModel>/ID} ? 'Edit Pizza Preference' : 'Add Pizza Preference' }"
+        contentWidth="520px">
+        <content>
+            <f:SimpleForm
+                id="idPreferenceForm"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="3"
+                labelSpanL="3"
+                labelSpanM="3"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="1"
+                emptySpanL="1"
+                emptySpanM="1"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1"
+                singleContainerFullSize="false">
+                <f:content>
+
+                    <Label text="Pizza" required="true" />
+                    <Select
+                        id="idDialogPizzaSelect"
+                        forceSelection="false"
+                        selectedKey="{dialogModel>/pizza_ID}"
+                        items="{ path: 'pizzaModel>/results' }">
+                        <core:Item key="{pizzaModel>ID}" text="{pizzaModel>name}" />
+                    </Select>
+
+                    <Label text="Notes" />
+                    <Input
+                        id="idDialogNotesInput"
+                        value="{dialogModel>/notes}" />
+
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        <beginButton>
+            <Button text="Save" type="Emphasized" press="onSavePreference" />
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press="onCancelPreference" />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

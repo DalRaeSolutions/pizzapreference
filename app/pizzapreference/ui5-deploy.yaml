@@ -1,5 +1,4 @@
-# yaml-language-server: $schema=https://sap.github.io/ui5-tooling/schema/ui5.yaml.json
-specVersion: '2.4'
+specVersion: '4.0'
 metadata:
   name: com.dalraesolutions.pizzapreference.pizzapreference
 type: application
@@ -13,7 +12,7 @@ builder:
       - "/localService/**"
   customTasks:
   - name: webide-extension-task-updateManifestJson
-    beforeTask: generateManifestBundle
+    beforeTask: generateCachebusterInfo
     configuration:
       appFolder: webapp
       destDir: dist
